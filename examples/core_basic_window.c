@@ -51,6 +51,7 @@ unsigned int gameFps = 60;
 static int framesCounter = 0;
 static bool gameOver = false;
 static bool pause = false;
+static bool menu = true;
 
 static FoodOrWall fruit = { 0 };
 static FoodOrWall wall[WALL_NBR] = { 0 };
@@ -59,7 +60,7 @@ static Vector2 snakePosition[SNAKE_LENGTH] = { 0 };
 static bool allowMove = false;
 static Vector2 offset = { 0 };
 static int counterTail = 0;
-static unsigned int gameMode = 2;
+static unsigned int gameMode = 0;
 unsigned int lives;
 //------------------------------------------------------------------------------------
 // Module Functions Declaration (local)
@@ -204,10 +205,13 @@ void InitGame(void)
 // Update game (one frame)
 void UpdateGame(void)
 {
-    if (!gameOver)
+    if (!gameOver && !menu)
     {
         if (IsKeyPressed('P')) pause = !pause;
-
+        
+        if ( pause && IsKeyPressed('E')) {
+            menu = true;
+        }
         if (!pause)
         {
            // WallGeneration();
@@ -304,12 +308,37 @@ void UpdateGame(void)
             framesCounter++;
         }
     }
-    else
+    else if (!menu && gameOver)
     {
         if (IsKeyPressed(KEY_ENTER))
         {
             InitGame();
             gameOver = false;
+        }
+        else if (IsKeyPressed('E')) {
+            InitGame();
+            menu = true;
+        }
+    }
+    else
+    {
+        if (IsKeyPressed('1'))
+        {
+            gameMode = 0;
+            InitGame();
+            menu = false;
+        }
+        else if (IsKeyPressed('2'))
+        {
+            gameMode = 1;
+            InitGame();
+            menu = false;
+        }
+        else if (IsKeyPressed('3'))
+        {
+            gameMode = 2;
+            InitGame();
+            menu = false;
         }
     }
 }
@@ -321,7 +350,7 @@ void DrawGame(void)
 
     ClearBackground(RAYWHITE);
 
-    if (!gameOver)
+    if (!gameOver && !menu)
     {
         // Draw grid lines
         for (int i = 0; i < screenWidth / SQUARE_SIZE + 1; i++)
@@ -343,10 +372,22 @@ void DrawGame(void)
         // Draw fruit to pick
         DrawRectangleV(fruit.position, fruit.size, fruit.color);
 
-        if (pause) DrawText("GAME PAUSED", screenWidth / 2 - MeasureText("GAME PAUSED", 40) / 2, screenHeight / 2 - 40, 40, GRAY);
+        if (pause) 
+        {
+            DrawText("GAME PAUSED", screenWidth / 2 - MeasureText("GAME PAUSED", 40) / 2, screenHeight / 2 - 40, 40, GRAY);
+            DrawText("PRESS [E] FOR MENU", screenWidth / 2 - MeasureText("PRESS [E] FOR MENU", 40) / 2, screenHeight / 2, 40, RED);
+        }
     }
-    else DrawText("PRESS [ENTER] TO PLAY AGAIN", GetScreenWidth() / 2 - MeasureText("PRESS [ENTER] TO PLAY AGAIN", 20) / 2, GetScreenHeight() / 2 - 50, 20, GRAY);
-
+    else if (!menu && gameOver) {
+        DrawText("PRESS [ENTER] TO PLAY AGAIN", GetScreenWidth() / 2 - MeasureText("PRESS [ENTER] TO PLAY AGAIN", 20) / 2, GetScreenHeight() / 2 - 50, 20, GRAY);
+        DrawText("PRESS [E] FOR MENU", GetScreenWidth() / 2 - MeasureText("PRESS [E] FOR MENU", 20) / 2, GetScreenHeight() / 2, 20, RED);
+    }
+    else
+    {
+        DrawText("MENU", GetScreenWidth() / 2 - MeasureText("MENU", 20) / 2, GetScreenHeight() / 2 - 50, 20, GRAY);
+        DrawText("SELECT DIFFICULTY 1 - 2 - 3", GetScreenWidth() / 2 - MeasureText("SELECT DIFFICULTY 1 - 2 - 3", 20) / 2, GetScreenHeight() / 2, 20, RED);
+        DrawText("PRESS [ESC] TO LEAVE", GetScreenWidth() / 2 - MeasureText("PRESS [ESC] TO LEAVE", 20) / 2, GetScreenHeight() / 2 + 50, 20 , DARKGRAY);
+    }
     EndDrawing();
 }
 
