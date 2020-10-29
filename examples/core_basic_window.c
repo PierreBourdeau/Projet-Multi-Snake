@@ -73,7 +73,8 @@ typedef enum {
     STORAGE_POSITION_SCORE = 0,
     STORAGE_POSITION_HISCORE = 1
 } StorageData;
-
+static int score;
+static int hiscore;
 //------------------------------------------------------------------------------------
 // Program main entry point
 //------------------------------------------------------------------------------------
@@ -126,7 +127,14 @@ void EndOfTheGame(void) {
     Vector2 direction = snake[0].speed;
     int temp = 0;
     if (lives == 0)
+    {
+        //Scoring storage
+        SaveStorageValue(STORAGE_POSITION_SCORE, counterTail);
+        if (counterTail > hiscore) {
+            SaveStorageValue(STORAGE_POSITION_HISCORE, counterTail);
+        }
         gameOver = true;
+    }
     else
     {
         snake[0].position = fruit.position;
@@ -160,8 +168,8 @@ void WallGeneration(void) {
 
 //Speed increase difficulty
 void SpeedIncrease(void) {
-    if (counterTail % 2 == 0 && gameFps <= 120) {
-        gameFps == gameFps + (counterTail*10);
+    if (gameFps <= 120) {
+        gameFps == gameFps + 20;
         SetTargetFPS(gameFps);
     }
 }
@@ -177,7 +185,8 @@ void InitGame(void)
 
     counterTail = 1;
     allowMove = false;
-
+    score = LoadStorageValue(STORAGE_POSITION_SCORE);
+    hiscore = LoadStorageValue(STORAGE_POSITION_HISCORE);
     offset.x = screenWidth % SQUARE_SIZE;
     offset.y = screenHeight % SQUARE_SIZE;
     lives = 3;
@@ -269,7 +278,7 @@ void UpdateGame(void)
                 ((snake[0].position.y) > (screenHeight - offset.y)) ||
                 (snake[0].position.x < 0) || (snake[0].position.y < 0))
             {
-                gameOver = true;
+                EndOfTheGame();
             }
 
             // Collision with yourself
@@ -307,18 +316,16 @@ void UpdateGame(void)
                 snake[counterTail].position = snakePosition[counterTail - 1];
                 counterTail += 1;
                 fruit.active = false;
-                //Scoring storage
-                SaveStorageValue(STORAGE_POSITION_SCORE, counterTail);
-                if (counterTail > LoadStorageValue(STORAGE_POSITION_HISCORE)) {
-                    SaveStorageValue(STORAGE_POSITION_HISCORE, counterTail);
+                if (gameMode == 2 && counterTail % 10 == 0) {
+                    wall->active = false;
+                    WallGeneration();
+                    SpeedIncrease();
                 }
             }
             //GameMode Features
             if (gameMode == 1 || gameMode ==2)
                 WallGeneration();
 
-            if (gameMode == 2)
-                SpeedIncrease();
     
             framesCounter++;
         }
@@ -405,11 +412,11 @@ void DrawGame(void)
         DrawText("PRESS [E] FOR MENU", GetScreenWidth() / 2 - MeasureText("PRESS [E] FOR MENU", 20) / 2, GetScreenHeight() / 2, 20, RED);
     }
     //Draw menu
-    else
+    else if (menu)
     {
         DrawText("MENU", GetScreenWidth() / 2 - MeasureText("MENU", 20) / 2, GetScreenHeight() / 2 - 50, 20, GRAY);
         DrawText("SELECT DIFFICULTY 1 - 2 - 3", GetScreenWidth() / 2 - MeasureText("SELECT DIFFICULTY 1 - 2 - 3", 20) / 2, GetScreenHeight() / 2, 20, RED);
-        DrawText(TextFormat("Last score : %i || Best score : %i", LoadStorageValue(STORAGE_POSITION_SCORE), LoadStorageValue(STORAGE_POSITION_HISCORE)), GetScreenWidth()/2 - MeasureText("Last score : 10 || Best score : 20", 20) /2 , GetScreenHeight() /2+50, 20,ORANGE);
+        DrawText(TextFormat("Last score : %i || Best score : %i", score, hiscore), GetScreenWidth()/2 - MeasureText("Last score : 10 || Best score : 20", 20) /2 , GetScreenHeight() /2+50, 20,ORANGE);
         DrawText("PRESS [ESC] TO LEAVE", GetScreenWidth() / 2 - MeasureText("PRESS [ESC] TO LEAVE", 20) / 2, GetScreenHeight()- 50, 20 , DARKGRAY);
     }
     EndDrawing();
