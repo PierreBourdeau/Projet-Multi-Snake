@@ -78,7 +78,13 @@ typedef enum {
 // Program main entry point
 //------------------------------------------------------------------------------------
 int main(void)
+
 {
+    //Setting default data values of scores to 0 in the file storage.data (1st start of the game)
+    if (LoadStorageValue(STORAGE_POSITION_SCORE) == NULL) {
+        SaveStorageValue(STORAGE_POSITION_HISCORE, 0);
+        SaveStorageValue(STORAGE_POSITION_SCORE, 0);
+    }
     // Initialization (Note windowTitle is unused on Android)
     //---------------------------------------------------------
     InitWindow(screenWidth, screenHeight, "SNAKE V.2");
@@ -114,7 +120,7 @@ int main(void)
 // Module Functions Definitions (local)
 //------------------------------------------------------------------------------------
 
-//Checking for the end of the game
+//Checking for the end of the game and manages the player lives
 void EndOfTheGame(void) {
     lives--;
     Vector2 direction = snake[0].speed;
@@ -127,8 +133,9 @@ void EndOfTheGame(void) {
     }
 }
 
-//Wall generation 
+//Randomized wall generation 
 void WallGeneration(void) {
+    //Generate walls if not already active
     if (!wall->active)
     {
         wall->active = true;
@@ -141,7 +148,7 @@ void WallGeneration(void) {
             }
         }
     }
-    // Collision
+    // Collision between snake and walls
     for (int i =0; i<WALL_NBR; i++) {
         if ((snake[0].position.x < (wall[i].position.x + wall->size.x) && (snake[0].position.x + snake[0].size.x) > wall[i].position.x) &&
             (snake[0].position.y < (wall[i].position.y + wall->size.y) && (snake[0].position.y + snake[0].size.y) > wall[i].position.y))
@@ -300,14 +307,13 @@ void UpdateGame(void)
                 snake[counterTail].position = snakePosition[counterTail - 1];
                 counterTail += 1;
                 fruit.active = false;
+                //Scoring storage
                 SaveStorageValue(STORAGE_POSITION_SCORE, counterTail);
                 if (counterTail > LoadStorageValue(STORAGE_POSITION_HISCORE)) {
                     SaveStorageValue(STORAGE_POSITION_HISCORE, counterTail);
-                    if (LoadStorageValue(STORAGE_POSITION_HISCORE) == NULL) {
-                        SaveStorageValue(STORAGE_POSITION_HISCORE,0);
-                    }
                 }
             }
+            //GameMode Features
             if (gameMode == 1 || gameMode ==2)
                 WallGeneration();
 
@@ -317,6 +323,7 @@ void UpdateGame(void)
             framesCounter++;
         }
     }
+    //GameOver page controls
     else if (!menu && gameOver)
     {
         if (IsKeyPressed(KEY_ENTER))
@@ -329,6 +336,7 @@ void UpdateGame(void)
             menu = true;
         }
     }
+    //Menu controls
     else
     {
         if (IsKeyPressed('1'))
@@ -384,16 +392,19 @@ void DrawGame(void)
         //Draw score
         DrawText(TextFormat("Score : %i", counterTail), 10, (GetScreenHeight() - 20), 20, BLUE);
 
+        //Draw pause during game
         if (pause) 
         {
             DrawText("GAME PAUSED", screenWidth / 2 - MeasureText("GAME PAUSED", 40) / 2, screenHeight / 2 - 40, 40, GRAY);
             DrawText("PRESS [E] FOR MENU", screenWidth / 2 - MeasureText("PRESS [E] FOR MENU", 40) / 2, screenHeight / 2, 40, RED);
         }
     }
+    //Draw gameOver page
     else if (!menu && gameOver) {
         DrawText("PRESS [ENTER] TO PLAY AGAIN", GetScreenWidth() / 2 - MeasureText("PRESS [ENTER] TO PLAY AGAIN", 20) / 2, GetScreenHeight() / 2 - 50, 20, GRAY);
         DrawText("PRESS [E] FOR MENU", GetScreenWidth() / 2 - MeasureText("PRESS [E] FOR MENU", 20) / 2, GetScreenHeight() / 2, 20, RED);
     }
+    //Draw menu
     else
     {
         DrawText("MENU", GetScreenWidth() / 2 - MeasureText("MENU", 20) / 2, GetScreenHeight() / 2 - 50, 20, GRAY);
