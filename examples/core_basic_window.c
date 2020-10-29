@@ -114,32 +114,14 @@ int main(void)
 //Checking for the end of the game
 void EndOfTheGame(void) {
     lives--;
+    Vector2 direction = snake[0].speed;
+    int temp = 0;
     if (lives == 0)
         gameOver = true;
     else
+    {
         snake[0].position = fruit.position;
-        for (int i = 1; i < counterTail; i++) {
-            for (int j = 0; j < WALL_NBR; j++) {
-                if ((snake[0].position.x != snake[i].position.x) && (snake[0].position.y != snake[i].position.y) && ((snake[i-1].position.x != wall[j].position.x) && (snake[i-1].position.y - snake[i - 1].size.y != wall[j].position.y)) && snake[i-1].position.y - snake[i - 1].size.y < (screenHeight - offset.y) && (snake[i-1].position.x > 0) && (snake[i-1].position.y - snake[i - 1].size.y > 0))
-                {
-                    snake[i].position.x = snake[i - 1].position.x;
-                    snake[i].position.y = snake[i - 1].position.y - snake[i - 1].size.y;
-                }
-                else if ((snake[0].position.x != snake[i].position.x) && (snake[0].position.y != snake[i].position.y) && ((snake[i-1].position.x) - snake[i - 1].size.x > (screenWidth - offset.x)) && ((snake[i-1].position.x - snake[i - 1].size.x != wall[j].position.x) && (snake[i-1].position.y != wall[j].position.y)) && snake[i-1].position.y < (screenHeight - offset.y) && (snake[i-1].position.x - snake[i - 1].size.x > 0) && (snake[i-1].position.y > 0)) {
-                    snake[i].position.x = snake[i - 1].position.x - snake[i - 1].size.x;
-                    snake[i].position.y = snake[i - 1].position.y;
-                }
-                else if ((snake[0].position.x != snake[i].position.x) && (snake[0].position.y != snake[i].position.y) && ((snake[i-1].position.x) + snake[i - 1].size.x < (screenWidth - offset.x)) && (snake[i-1].position.x + snake[i - 1].size.x != wall[j].position.x) && (snake[i-1].position.y != wall[j].position.y) && snake[i-1].position.y < (screenHeight - offset.y) && (snake[i-1].position.x + snake[i - 1].size.x > 0) && (snake[i-1].position.y > 0)) {
-                    snake[i].position.x = snake[i - 1].position.x + snake[i - 1].size.x;
-                    snake[i].position.y = snake[i - 1].position.y;
-                }
-                else if ((snake[0].position.x != snake[i].position.x) && (snake[0].position.y != snake[i].position.y) && (snake[i-1].position.x != wall[j].position.x) && (snake[i-1].position.y + snake[i - 1].size.y != wall[j].position.y) && snake[i-1].position.y + snake[i - 1].size.y < (screenHeight - offset.y) && (snake[i-1].position.x > 0) || (snake[i-1].position.y + snake[i - 1].size.y > 0))
-                {
-                    snake[i].position.x = snake[i - 1].position.x;
-                    snake[i].position.y = snake[i - 1].position.y + snake[i - 1].size.y;
-                }
-            }
-        }
+    }
 }
 
 //Wall generation 
