@@ -15,14 +15,12 @@
 #if defined(PLATFORM_WEB)
 #include <emscripten/emscripten.h>
 #endif
-
 //----------------------------------------------------------------------------------
 // Some Defines
 //----------------------------------------------------------------------------------
 #define SNAKE_LENGTH   256
 #define SQUARE_SIZE     31
-#define WALL_NBR 10
-
+#define WALL_NBR 10 //Number of wall generated on the game board
 //----------------------------------------------------------------------------------
 // Types and Structures Definition
 //----------------------------------------------------------------------------------
@@ -38,9 +36,8 @@ typedef struct FoodOrWall {
     Vector2 size;
     bool active;
     Color color;
-    bool isWall;
+    bool isWall; //Added field to specify if an entity is dangerous or not
 } FoodOrWall;
-
 //------------------------------------------------------------------------------------
 // Global Variables Declaration
 //------------------------------------------------------------------------------------
@@ -50,7 +47,7 @@ unsigned int gameFps = 60;
 static int framesCounter = 0;
 static bool gameOver = false;
 static bool pause = false;
-static bool menu = true;
+static bool menu = true; //Variable that determine the active state of the menu
 static FoodOrWall fruit = { 0 };
 static FoodOrWall wall[WALL_NBR] = { 0 };
 static Snake snake[SNAKE_LENGTH] = { 0 };
@@ -59,7 +56,7 @@ static bool allowMove = false;
 static Vector2 offset = { 0 };
 static int counterTail = 0;
 static unsigned int gameMode = 0;
-unsigned int lives;
+unsigned int lives; // Variable corresponding to the number of lives
 //------------------------------------------------------------------------------------
 // Module Functions Declaration (local)
 //------------------------------------------------------------------------------------
@@ -68,13 +65,15 @@ static void UpdateGame(void);       // Update game (one frame)
 static void DrawGame(void);         // Draw game (one frame)
 static void UnloadGame(void);       // Unload game
 static void UpdateDrawFrame(void);  // Update and Draw (one frame)
-// SCORES 
+//------------------------------------------------------------------------------------
+// Score storage variables declaratio
+//------------------------------------------------------------------------------------
 typedef enum {
     STORAGE_POSITION_SCORE = 0,
     STORAGE_POSITION_HISCORE = 1
 } StorageData;
-static int score;
-static int hiscore;
+static int score; //score of the last run
+static int hiscore; //highest score
 //------------------------------------------------------------------------------------
 // Program main entry point
 //------------------------------------------------------------------------------------
@@ -82,6 +81,7 @@ int main(void)
 
 {
     //Setting default data values of scores to 0 in the file storage.data (1st start of the game)
+    //---------------------------------------------------------
     if (LoadStorageValue(STORAGE_POSITION_SCORE) == NULL) {
         SaveStorageValue(STORAGE_POSITION_HISCORE, 0);
         SaveStorageValue(STORAGE_POSITION_SCORE, 0);
@@ -122,13 +122,12 @@ int main(void)
 //------------------------------------------------------------------------------------
 
 //Checking for the end of the game and manages the player lives
+//---------------------------------------------------------
 void EndOfTheGame(void) {
     lives--;
-    Vector2 direction = snake[0].speed;
-    int temp = 0;
     if (lives == 0)
     {
-        //Scoring storage
+        //Scoring storage (/!\ at the end of each game to minimize file reading)
         SaveStorageValue(STORAGE_POSITION_SCORE, counterTail);
         if (counterTail > hiscore) {
             SaveStorageValue(STORAGE_POSITION_HISCORE, counterTail);
@@ -137,11 +136,12 @@ void EndOfTheGame(void) {
     }
     else
     {
-        snake[0].position = fruit.position;
+        snake[0].position = fruit.position; //if the player have other lifes, he restarts on the last fruit present on the map
     }
 }
 
-//Randomized wall generation 
+//Randomized wall generation & wall collision
+//---------------------------------------------------------
 void WallGeneration(void) {
     //Generate walls if not already active
     if (!wall->active)
@@ -166,7 +166,8 @@ void WallGeneration(void) {
     }
 }
 
-//Speed increase difficulty
+//Speed increase difficulty W*I*P
+//---------------------------------------------------------
 void SpeedIncrease(void) {
     if (gameFps <= 120) {
         gameFps == gameFps + 20;
@@ -177,6 +178,7 @@ void SpeedIncrease(void) {
 
 
 // Initialize game variables
+//---------------------------------------------------------
 void InitGame(void)
 {
     framesCounter = 0;
@@ -221,6 +223,7 @@ void InitGame(void)
 
 
 // Update game (one frame)
+//---------------------------------------------------------
 void UpdateGame(void)
 {
     if (!gameOver && !menu)
@@ -232,8 +235,6 @@ void UpdateGame(void)
         }
         if (!pause)
         {
-           // WallGeneration();
-
             // Player control
             if (IsKeyPressed(KEY_RIGHT) && (snake[0].speed.x == 0) && allowMove)
             {
@@ -309,24 +310,24 @@ void UpdateGame(void)
                 }
             }
 
-            // Collision
+            // Collision with fruit
             if ((snake[0].position.x < (fruit.position.x + fruit.size.x) && (snake[0].position.x + snake[0].size.x) > fruit.position.x) &&
                 (snake[0].position.y < (fruit.position.y + fruit.size.y) && (snake[0].position.y + snake[0].size.y) > fruit.position.y))
             {
                 snake[counterTail].position = snakePosition[counterTail - 1];
                 counterTail += 1;
                 fruit.active = false;
+                //If playing in gameMode 2, generate new wall configuration each 10 fruits eaten
                 if (gameMode == 2 && counterTail % 10 == 0) {
                     wall->active = false;
                     WallGeneration();
                     SpeedIncrease();
                 }
             }
-            //GameMode Features
+            //GameMode Features : wall generation
             if (gameMode == 1 || gameMode ==2)
                 WallGeneration();
 
-    
             framesCounter++;
         }
     }
@@ -368,6 +369,7 @@ void UpdateGame(void)
 }
 
 // Draw game (one frame)
+//---------------------------------------------------------
 void DrawGame(void)
 {
     BeginDrawing();
@@ -423,12 +425,14 @@ void DrawGame(void)
 }
 
 // Unload game variables
+//---------------------------------------------------------
 void UnloadGame(void)
 {
     // TODO: Unload all dynamic loaded data (textures, sounds, models...)
 }
 
 // Update and Draw (one frame)
+//---------------------------------------------------------
 void UpdateDrawFrame(void)
 {
     UpdateGame();
