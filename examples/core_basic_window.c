@@ -47,12 +47,10 @@ typedef struct FoodOrWall {
 static const int screenWidth = 1600;
 static const int screenHeight = 900;
 unsigned int gameFps = 60;
-
 static int framesCounter = 0;
 static bool gameOver = false;
 static bool pause = false;
 static bool menu = true;
-
 static FoodOrWall fruit = { 0 };
 static FoodOrWall wall[WALL_NBR] = { 0 };
 static Snake snake[SNAKE_LENGTH] = { 0 };
@@ -70,7 +68,11 @@ static void UpdateGame(void);       // Update game (one frame)
 static void DrawGame(void);         // Draw game (one frame)
 static void UnloadGame(void);       // Unload game
 static void UpdateDrawFrame(void);  // Update and Draw (one frame)
-
+// SCORES 
+typedef enum {
+    STORAGE_POSITION_SCORE = 0,
+    STORAGE_POSITION_HISCORE = 1
+} StorageData;
 
 //------------------------------------------------------------------------------------
 // Program main entry point
@@ -79,7 +81,7 @@ int main(void)
 {
     // Initialization (Note windowTitle is unused on Android)
     //---------------------------------------------------------
-    InitWindow(screenWidth, screenHeight, "sample game: snake");
+    InitWindow(screenWidth, screenHeight, "SNAKE V.2");
 
     InitGame();
 
@@ -152,7 +154,7 @@ void WallGeneration(void) {
 //Speed increase difficulty
 void SpeedIncrease(void) {
     if (counterTail % 2 == 0 && gameFps <= 120) {
-        gameFps == gameFps + 100;
+        gameFps == gameFps + (counterTail*10);
         SetTargetFPS(gameFps);
     }
 }
@@ -298,13 +300,20 @@ void UpdateGame(void)
                 snake[counterTail].position = snakePosition[counterTail - 1];
                 counterTail += 1;
                 fruit.active = false;
+                SaveStorageValue(STORAGE_POSITION_SCORE, counterTail);
+                if (counterTail > LoadStorageValue(STORAGE_POSITION_HISCORE)) {
+                    SaveStorageValue(STORAGE_POSITION_HISCORE, counterTail);
+                    if (LoadStorageValue(STORAGE_POSITION_HISCORE) == NULL) {
+                        SaveStorageValue(STORAGE_POSITION_HISCORE,0);
+                    }
+                }
             }
             if (gameMode == 1 || gameMode ==2)
                 WallGeneration();
 
-            /*if (gameMode == 2)
+            if (gameMode == 2)
                 SpeedIncrease();
-            */
+    
             framesCounter++;
         }
     }
@@ -372,6 +381,9 @@ void DrawGame(void)
         // Draw fruit to pick
         DrawRectangleV(fruit.position, fruit.size, fruit.color);
 
+        //Draw score
+        DrawText(TextFormat("Score : %i", counterTail), 10, (GetScreenHeight() - 20), 20, BLUE);
+
         if (pause) 
         {
             DrawText("GAME PAUSED", screenWidth / 2 - MeasureText("GAME PAUSED", 40) / 2, screenHeight / 2 - 40, 40, GRAY);
@@ -386,7 +398,8 @@ void DrawGame(void)
     {
         DrawText("MENU", GetScreenWidth() / 2 - MeasureText("MENU", 20) / 2, GetScreenHeight() / 2 - 50, 20, GRAY);
         DrawText("SELECT DIFFICULTY 1 - 2 - 3", GetScreenWidth() / 2 - MeasureText("SELECT DIFFICULTY 1 - 2 - 3", 20) / 2, GetScreenHeight() / 2, 20, RED);
-        DrawText("PRESS [ESC] TO LEAVE", GetScreenWidth() / 2 - MeasureText("PRESS [ESC] TO LEAVE", 20) / 2, GetScreenHeight() / 2 + 50, 20 , DARKGRAY);
+        DrawText(TextFormat("Last score : %i || Best score : %i", LoadStorageValue(STORAGE_POSITION_SCORE), LoadStorageValue(STORAGE_POSITION_HISCORE)), GetScreenWidth()/2 - MeasureText("Last score : 10 || Best score : 20", 20) /2 , GetScreenHeight() /2+50, 20,ORANGE);
+        DrawText("PRESS [ESC] TO LEAVE", GetScreenWidth() / 2 - MeasureText("PRESS [ESC] TO LEAVE", 20) / 2, GetScreenHeight()- 50, 20 , DARKGRAY);
     }
     EndDrawing();
 }
