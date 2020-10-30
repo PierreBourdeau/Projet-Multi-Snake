@@ -10,7 +10,7 @@
 *   Copyright (c) 2015 Ramon Santamaria (@raysan5)
 *
 ********************************************************************************************/
-/*#include <stdio.h>
+#include <stdio.h>
 #include "raylib.h"
 #if defined(PLATFORM_WEB)
 #include <emscripten/emscripten.h>
@@ -57,6 +57,9 @@ static Vector2 offset = { 0 };
 static int counterTail = 0;
 static unsigned int gameMode = 0;
 unsigned int lives; // Variable corresponding to the number of lives
+bool crosswall = false;
+bool options = false;
+static unsigned int menuSelector = 0;
 //------------------------------------------------------------------------------------
 // Module Functions Declaration (local)
 //------------------------------------------------------------------------------------
@@ -149,18 +152,18 @@ void WallGeneration(void) {
         wall->active = true;
         for (int y = 0; y < WALL_NBR; y++) {
             wall[y].position = (Vector2){ GetRandomValue(0, (screenWidth / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.x / 2, GetRandomValue(0, (screenHeight / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.y / 2 };
-            for (int k=0; k<counterTail;k++)
+            for (int k = 0; k < counterTail; k++)
             {
                 if ((wall[y].position.x == snake[k].position.x) && (wall[y].position.y == snake[k].position.y))
                 {
-                     wall[y].position = (Vector2){ GetRandomValue(0, (screenWidth / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.x / 2, GetRandomValue(0, (screenHeight / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.y / 2 };
-                     y = y-1;
+                    wall[y].position = (Vector2){ GetRandomValue(0, (screenWidth / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.x / 2, GetRandomValue(0, (screenHeight / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.y / 2 };
+                    y = y - 1;
                 }
             }
         }
     }
     // Collision between snake and walls
-    for (int i =0; i<WALL_NBR; i++) {
+    for (int i = 0; i < WALL_NBR; i++) {
         if ((snake[0].position.x < (wall[i].position.x + wall->size.x) && (snake[0].position.x + snake[0].size.x) > wall[i].position.x) &&
             (snake[0].position.y < (wall[i].position.y + wall->size.y) && (snake[0].position.y + snake[0].size.y) > wall[i].position.y))
         {
@@ -169,15 +172,74 @@ void WallGeneration(void) {
     }
 }
 
-//Speed increase difficulty W*I*P
+/*//Speed increase difficulty W*I*P
 //---------------------------------------------------------
 void SpeedIncrease(void) {
     if (gameFps <= 120) {
         gameFps == gameFps + 20;
         SetTargetFPS(gameFps);
     }
+}*/
+
+void CrossWall(void) {
+
 }
 
+//Game Options window display and control
+void gOptions(void) {
+    ClearBackground(RAYWHITE);
+    DrawText("OPTIONS", GetScreenWidth() / 2 - MeasureText("OPTIONS", 20) / 2, GetScreenHeight() / 2 - 100, 20, GRAY);
+    DrawText("[ENTER] TO SAVE", GetScreenWidth() / 2 - MeasureText("[ENTER] TO SAVE", 20) / 2, GetScreenHeight() - 100, 20, LIGHTGRAY);
+        if (IsKeyPressed(KEY_UP) && menuSelector != 0) menuSelector--;
+        else if (IsKeyPressed(KEY_DOWN) && menuSelector != 2) menuSelector++;
+        else if (IsKeyPressed(KEY_UP) && menuSelector == 0) menuSelector = 2;
+        else if (IsKeyPressed(KEY_DOWN) && menuSelector == 2) menuSelector = 0;
+        else if (IsKeyPressed(KEY_ENTER)) options = false;
+        if (menuSelector == 0)
+        {
+            DrawText(TextFormat("> SELECT DIFFICULTY ([1], [2] or [3]) : %i", gameMode+1), GetScreenWidth() / 2 - MeasureText("SELECT DIFFICULTY ([1], [2] or [3]) : 3", 20) / 2, GetScreenHeight() / 2 -50, 20, RED);
+            DrawText(TextFormat("MULTIPLE LIVES : %i", lives), GetScreenWidth() / 2 - MeasureText("MULTIPLE LIVES : 3", 20) / 2, GetScreenHeight() / 2, 20, GRAY);
+            DrawText(TextFormat("CROSS WALLS : %i", crosswall), GetScreenWidth() / 2 - MeasureText("CROSS WALLS : 1", 20) / 2, GetScreenHeight() / 2 +50, 20, GRAY);
+            if (IsKeyPressed('1'))
+            {
+                gameMode = 0;
+            }
+            else if (IsKeyPressed('2'))
+            {
+                gameMode = 1;
+            }
+            else if (IsKeyPressed('3'))
+            {
+                gameMode = 2;
+            }
+        }
+        else if (menuSelector == 1) {
+            DrawText(TextFormat("SELECT DIFFICULTY (1, 2 or 3) : %i", gameMode+1), GetScreenWidth() / 2 - MeasureText("SELECT DIFFICULTY 1 - 2 - 3 : 3", 20) / 2, GetScreenHeight() / 2 -50, 20, GRAY);
+            DrawText(TextFormat("> MULTIPLE LIVES [Y/N] : %i", lives), GetScreenWidth() / 2 - MeasureText("MULTIPLE LIVES [Y/N] : 3", 20) / 2, GetScreenHeight() / 2, 20, RED);
+            DrawText(TextFormat("CROSS WALLS : %i", crosswall), GetScreenWidth() / 2 - MeasureText("CROSS WALLS : 1", 20) / 2, GetScreenHeight() / 2 +50, 20, GRAY);
+            if (IsKeyPressed('Y'))
+            {
+                lives = 3;
+            }
+            else if (IsKeyPressed('N'))
+            {
+                lives = 1;
+            }
+        }
+        else if (menuSelector == 2)
+        {
+            DrawText(TextFormat("SELECT DIFFICULTY (1, 2 or 3) : %i", gameMode+1), GetScreenWidth() / 2 - MeasureText("SELECT DIFFICULTY 1 - 2 - 3 : 3", 20) / 2, GetScreenHeight() / 2 -50, 20, GRAY);
+            DrawText(TextFormat("MULTIPLE LIVES : %i", lives), GetScreenWidth() / 2 - MeasureText("MULTIPLE LIVES : 3", 20) / 2, GetScreenHeight() / 2, 20, GRAY);
+            DrawText(TextFormat("> CROSS WALLS [Y/N] : %i", crosswall), GetScreenWidth() / 2 - MeasureText("CROSS WALLS [Y/N] : 1", 20) / 2, GetScreenHeight() / 2 + 50, 20, RED);
+            if (IsKeyPressed('Y'))
+            {
+                crosswall = true;
+            }
+            else if (IsKeyPressed('N')) {
+                crosswall = false;
+            }
+        }
+}
 
 
 // Initialize game variables
@@ -194,7 +256,6 @@ void InitGame(void)
     hiscore = LoadStorageValue(STORAGE_POSITION_HISCORE);
     offset.x = screenWidth % SQUARE_SIZE;
     offset.y = screenHeight % SQUARE_SIZE;
-    lives = 3;
     for (int i = 0; i < SNAKE_LENGTH; i++)
     {
         snake[i].position = (Vector2){ offset.x / 2, offset.y / 2 };
@@ -232,8 +293,8 @@ void UpdateGame(void)
     if (!gameOver && !menu)
     {
         if (IsKeyPressed('P')) pause = !pause;
-        
-        if ( pause && IsKeyPressed('E')) {
+
+        if (pause && IsKeyPressed('E')) {
             menu = true;
         }
         if (!pause)
@@ -324,11 +385,10 @@ void UpdateGame(void)
                 if (gameMode == 2 && counterTail % 10 == 0) {
                     wall->active = false;
                     WallGeneration();
-                    SpeedIncrease();
                 }
             }
             //GameMode Features : wall generation
-            if (gameMode == 1 || gameMode ==2)
+            if (gameMode == 1 || gameMode == 2)
                 WallGeneration();
 
             framesCounter++;
@@ -350,26 +410,18 @@ void UpdateGame(void)
     //Menu controls
     else
     {
-        if (IsKeyPressed('1'))
-        {
-            gameMode = 0;
-            InitGame();
-            menu = false;
+        if (IsKeyPressed(KEY_O)) {
+            options = true;
         }
-        else if (IsKeyPressed('2'))
-        {
-            gameMode = 1;
-            InitGame();
-            menu = false;
-        }
-        else if (IsKeyPressed('3'))
-        {
-            gameMode = 2;
+        else if (IsKeyPressed(KEY_SPACE)) {
             InitGame();
             menu = false;
         }
     }
 }
+
+
+//Draw game Menu chose game options
 
 // Draw game (one frame)
 //---------------------------------------------------------
@@ -379,7 +431,7 @@ void DrawGame(void)
 
     ClearBackground(RAYWHITE);
 
-    if (!gameOver && !menu)
+    if (!gameOver && !menu && !options)
     {
         // Draw grid lines
         for (int i = 0; i < screenWidth / SQUARE_SIZE + 1; i++)
@@ -393,7 +445,7 @@ void DrawGame(void)
         }
 
         //Drawn walls
-        for (int i =0; i< WALL_NBR; i++) DrawRectangleV(wall[i].position, wall[i].size, wall->color);
+        for (int i = 0; i < WALL_NBR; i++) DrawRectangleV(wall[i].position, wall[i].size, wall->color);
 
         // Draw snake
         for (int i = 0; i < counterTail; i++) DrawRectangleV(snake[i].position, snake[i].size, snake[i].color);
@@ -405,24 +457,30 @@ void DrawGame(void)
         DrawText(TextFormat("Score : %i", counterTail), 10, (GetScreenHeight() - 20), 20, BLUE);
 
         //Draw pause during game
-        if (pause) 
+        if (pause)
         {
             DrawText("GAME PAUSED", screenWidth / 2 - MeasureText("GAME PAUSED", 40) / 2, screenHeight / 2 - 40, 40, GRAY);
             DrawText("PRESS [E] FOR MENU", screenWidth / 2 - MeasureText("PRESS [E] FOR MENU", 40) / 2, screenHeight / 2, 40, RED);
         }
     }
     //Draw gameOver page
-    else if (!menu && gameOver) {
+    else if (!menu && gameOver && !options) {
         DrawText("PRESS [ENTER] TO PLAY AGAIN", GetScreenWidth() / 2 - MeasureText("PRESS [ENTER] TO PLAY AGAIN", 20) / 2, GetScreenHeight() / 2 - 50, 20, GRAY);
         DrawText("PRESS [E] FOR MENU", GetScreenWidth() / 2 - MeasureText("PRESS [E] FOR MENU", 20) / 2, GetScreenHeight() / 2, 20, RED);
     }
     //Draw menu
-    else if (menu)
+    else if (menu && !options)
     {
+
         DrawText("MENU", GetScreenWidth() / 2 - MeasureText("MENU", 20) / 2, GetScreenHeight() / 2 - 50, 20, GRAY);
-        DrawText("SELECT DIFFICULTY 1 - 2 - 3", GetScreenWidth() / 2 - MeasureText("SELECT DIFFICULTY 1 - 2 - 3", 20) / 2, GetScreenHeight() / 2, 20, RED);
-        DrawText(TextFormat("Last score : %i || Best score : %i", score, hiscore), GetScreenWidth()/2 - MeasureText("Last score : 10 || Best score : 20", 20) /2 , GetScreenHeight() /2+50, 20,ORANGE);
-        DrawText("PRESS [ESC] TO LEAVE", GetScreenWidth() / 2 - MeasureText("PRESS [ESC] TO LEAVE", 20) / 2, GetScreenHeight()- 50, 20 , DARKGRAY);
+        DrawText("[O] - OPTIONS", GetScreenWidth() / 2 - MeasureText("[O] - OPTIONS", 20) / 2, GetScreenHeight() / 2, 20, RED);
+        DrawText(TextFormat("Last score : %i || Best score : %i", score, hiscore), GetScreenWidth() / 2 - MeasureText("Last score : 10 || Best score : 20", 20) / 2, GetScreenHeight() / 2 + 50, 20, ORANGE);
+        DrawText("[SPACE] TO START", GetScreenWidth() / 2 - MeasureText("[SPACE] TO START", 20) / 2, GetScreenHeight() / 2 + 100, 20, LIGHTGRAY);
+        DrawText("PRESS [ESC] TO LEAVE", GetScreenWidth() / 2 - MeasureText("PRESS [ESC] TO LEAVE", 20) / 2, GetScreenHeight() - 50, 20, DARKGRAY);
+    }
+    else if (options)
+    {
+        gOptions();
     }
     EndDrawing();
 }
@@ -440,4 +498,4 @@ void UpdateDrawFrame(void)
 {
     UpdateGame();
     DrawGame();
-}*/
+}

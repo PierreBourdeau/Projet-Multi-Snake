@@ -10,7 +10,7 @@
 *   Copyright (c) 2015 Ramon Santamaria (@raysan5)
 *
 ********************************************************************************************/
-#include <stdio.h>
+/*#include <stdio.h>
 #include "raylib.h"
 #if defined(PLATFORM_WEB)
 #include <emscripten/emscripten.h>
@@ -43,8 +43,8 @@ typedef struct FoodOrWall {
 } FoodOrWall;
 
 typedef struct multiplayers {
-    Snake** snakes;
     unsigned int nbrOfPlayer;
+    Snake* snakes[2];
 } MultiP;
 //------------------------------------------------------------------------------------
 // Global Variables Declaration
@@ -131,17 +131,19 @@ int main(void)
 //Checking for the end of the game and manages the player lives
 //---------------------------------------------------------
 void EndOfTheGame(Snake *aSnake) {
+    aSnake->lives--;
         if (aSnake->lives == 0)
         {
             gameOver = true;
-            /*//Scoring storage (/!\ at the end of each game to minimize file reading)
+            //Scoring storage (/!\ at the end of each game to minimize file reading)
             SaveStorageValue(STORAGE_POSITION_SCORE, counterTail);
             if (counterTail > hiscore) {
-                SaveStorageValue(STORAGE_POSITION_HISCORE, counterTail);*/
+                SaveStorageValue(STORAGE_POSITION_HISCORE, counterTail);
         }
         else
         {   
-             aSnake->position = fruit.position; //if the player have other lifes, he restarts on the last fruit present on the map
+            aSnake->position = fruit.position; //if the player have other lifes, he restarts on the last fruit present on the map
+            aSnake->counterTail--;
         }
 }
 
@@ -198,10 +200,9 @@ void InitGame(void)
     gameOver = false;
     pause = false;
     players.nbrOfPlayer = 2;
-    players.snakes = (Snake**)malloc(3 * sizeof(Snake*));
     players.snakes[0] = player1;
     if (players.nbrOfPlayer == 2) {
-        players.snakes[1] = &player2;
+        players.snakes[1] = player2;
     }
     allowMove = false;
     score = LoadStorageValue(STORAGE_POSITION_SCORE);
@@ -215,20 +216,25 @@ void InitGame(void)
         for (int j = 0; j < SNAKE_LENGTH; j++)
         {
             players.snakes[i][j].size = (Vector2){ SQUARE_SIZE, SQUARE_SIZE };
-            players.snakes[i][j].speed = (Vector2){ SQUARE_SIZE, 0 };
-
-            if (i == 0 && j == 0) players.snakes[i][j].color = DARKBLUE;
-            else if (i == 0)
+            if (i == 0 && j == 0) // player 1 snake head
+            {
+                players.snakes[i][j].color = DARKBLUE;
+            }
+            else if (i == 0) // player 1 snake
             {
                 players.snakes[i][j].color = BLUE;
                 players.snakes[i][j].position = (Vector2){ offset.x / 2, offset.y / 2 };
+                players.snakes[i][j].speed = (Vector2){ SQUARE_SIZE, 0 };
             }
-            else if (i == 1 && j == 0) players.snakes[i][j].color = ORANGE;
-            else 
+            else if (i == 1 && j == 0) // player 2 snake head
+            {
+                players.snakes[i][j].color = ORANGE;
+            }
+            else if (i==1) // player 2 snake
             {
                 players.snakes[i][j].color = GOLD;
-                players.snakes[i][j].position = (Vector2){ screenWidth-offset.x / 2, screenHeight-offset.y / 2 };
-
+                players.snakes[i][j].position = (Vector2){ (screenWidth - (offset.x/2)), (screenHeight - (offset.y/2))};
+                players.snakes[i][j].speed = (Vector2){-SQUARE_SIZE, 0 };
             }
         }
     }
@@ -236,7 +242,7 @@ void InitGame(void)
     for (int n = 0; n < players.nbrOfPlayer; n++) {
         for (int i = 0; i < SNAKE_LENGTH; i++)
         {
-            players.snakes[n]->snakePosition[i] = (Vector2){ 0.0f, 0.0f };
+            players.snakes[n]->snakePosition[i] = (Vector2){ 0.0f, 0.0f };;
         }
     }
 
@@ -490,7 +496,7 @@ void DrawGame(void)
         DrawText(TextFormat("Score Player 1 : %i", players.snakes[0]->counterTail), 10, (GetScreenHeight() - 20), 20, BLUE);
         if (players.nbrOfPlayer == 2)
         {
-            DrawText(TextFormat("Score Player 2 : %i", players.snakes[1]->counterTail), GetScreenWidth()- 10, (GetScreenHeight() - 20), 20, BLUE);
+            DrawText(TextFormat("Score Player 2 : %i", players.snakes[1]->counterTail), GetScreenWidth() - MeasureText("Score Player 2 : %i", 20) - 10, (GetScreenHeight() - 20), 20, BLUE);
         }
         //Draw pause during game
         if (pause)
@@ -519,10 +525,7 @@ void DrawGame(void)
 //---------------------------------------------------------
 void UnloadGame(void)
 {
-    if (players.nbrOfPlayer == 2) {
-        free(players.snakes[1]);
-    }
-    free(players.snakes[0]);
+
 }
 
 // Update and Draw (one frame)
@@ -531,4 +534,4 @@ void UpdateDrawFrame(void)
 {
     UpdateGame();
     DrawGame();
-}
+}*/

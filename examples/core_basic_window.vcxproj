@@ -327,7 +327,10 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="core_basic_window.c" />
+    <ClCompile Include="core_basic_window.c">
+      <SubType>
+      </SubType>
+    </ClCompile>
     <ClCompile Include="main.c">
       <SubType>
       </SubType>
