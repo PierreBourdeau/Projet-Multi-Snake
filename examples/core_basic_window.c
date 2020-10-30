@@ -70,6 +70,11 @@ static void UpdateGame(void);       // Update game (one frame)
 static void DrawGame(void);         // Draw game (one frame)
 static void UnloadGame(void);       // Unload game
 static void UpdateDrawFrame(void);  // Update and Draw (one frame)
+static void EndOfTheGame(void);     //Check for the end of the game and manages the player lives
+static void WallGeneration(void);   //Randomized wall generation & wall collision
+static void SpeedIncrease(void);    //In game mode 2, increase game fps of +10 every 10 fruits eaten
+static void CrossWall(void);        //Permit to cross the map from right to left, from top to bottom and vice-versa
+static void gOptions(void);         //Game Options window display and control
 //------------------------------------------------------------------------------------
 // Score storage variables declaratio
 //------------------------------------------------------------------------------------
@@ -208,11 +213,13 @@ void gOptions(void) {
     ClearBackground(RAYWHITE);
     DrawText("OPTIONS", GetScreenWidth() / 2 - MeasureText("OPTIONS", 20) / 2, GetScreenHeight() / 2 - 100, 20, GRAY);
     DrawText("[ENTER] TO SAVE", GetScreenWidth() / 2 - MeasureText("[ENTER] TO SAVE", 20) / 2, GetScreenHeight() - 100, 20, LIGHTGRAY);
+        //Navigate through the menu 
         if (IsKeyPressed(KEY_UP) && menuSelector != 0) menuSelector--;
         else if (IsKeyPressed(KEY_DOWN) && menuSelector != 2) menuSelector++;
         else if (IsKeyPressed(KEY_UP) && menuSelector == 0) menuSelector = 2;
         else if (IsKeyPressed(KEY_DOWN) && menuSelector == 2) menuSelector = 0;
         else if (IsKeyPressed(KEY_ENTER)) options = false;
+        //control options : game-mode (difficulty)
         if (menuSelector == 0)
         {
             DrawText(TextFormat("> SELECT DIFFICULTY ([1], [2] or [3]) : %i", gameMode+1), GetScreenWidth() / 2 - MeasureText("SELECT DIFFICULTY ([1], [2] or [3]) : 3", 20) / 2, GetScreenHeight() / 2 -50, 20, RED);
@@ -231,6 +238,7 @@ void gOptions(void) {
                 gameMode = 2;
             }
         }
+        //control options : enable/disable multiple lives
         else if (menuSelector == 1) {
             DrawText(TextFormat("SELECT DIFFICULTY (1, 2 or 3) : %i", gameMode+1), GetScreenWidth() / 2 - MeasureText("SELECT DIFFICULTY 1 - 2 - 3 : 3", 20) / 2, GetScreenHeight() / 2 -50, 20, GRAY);
             DrawText(TextFormat("> MULTIPLE LIVES [Y/N] : %i", snake->lives), GetScreenWidth() / 2 - MeasureText("MULTIPLE LIVES [Y/N] : 3", 20) / 2, GetScreenHeight() / 2, 20, RED);
@@ -246,6 +254,7 @@ void gOptions(void) {
                 gotLives = false;
             }
         }
+        //control options : enable/disable cross wall
         else if (menuSelector == 2)
         {
             DrawText(TextFormat("SELECT DIFFICULTY (1, 2 or 3) : %i", gameMode+1), GetScreenWidth() / 2 - MeasureText("SELECT DIFFICULTY 1 - 2 - 3 : 3", 20) / 2, GetScreenHeight() / 2 -50, 20, GRAY);
