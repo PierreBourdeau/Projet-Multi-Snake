@@ -29,6 +29,7 @@ typedef struct Snake {
     Vector2 size;
     Vector2 speed;
     Color color;
+    unsigned int lives;
 } Snake;
 
 typedef struct FoodOrWall {
@@ -48,6 +49,11 @@ static int framesCounter = 0;
 static bool gameOver = false;
 static bool pause = false;
 static bool menu = true; //Variable that determine the active state of the menu
+static bool options = false; //Variable that determine the active state of option page
+static bool crosswall = false; //Variable to allow or disable cross wall game rule
+static unsigned int gameMode = 0; //Varaible to select the game difficulty
+static bool gotLives; // Variable corresponding to the number of lives
+static unsigned int menuSelector = 0; //Variable to navigate into options menu
 static FoodOrWall fruit = { 0 };
 static FoodOrWall wall[WALL_NBR] = { 0 };
 static Snake snake[SNAKE_LENGTH] = { 0 };
@@ -55,11 +61,7 @@ static Vector2 snakePosition[SNAKE_LENGTH] = { 0 };
 static bool allowMove = false;
 static Vector2 offset = { 0 };
 static int counterTail = 0;
-static unsigned int gameMode = 0;
-unsigned int lives; // Variable corresponding to the number of lives
-bool crosswall = false;
-bool options = false;
-static unsigned int menuSelector = 0;
+
 //------------------------------------------------------------------------------------
 // Module Functions Declaration (local)
 //------------------------------------------------------------------------------------
@@ -77,6 +79,7 @@ typedef enum {
 } StorageData;
 static int score; //score of the last run
 static int hiscore; //highest score
+
 //------------------------------------------------------------------------------------
 // Program main entry point
 //------------------------------------------------------------------------------------
@@ -98,7 +101,6 @@ int main(void)
 #if defined(PLATFORM_WEB)
     emscripten_set_main_loop(UpdateDrawFrame, 60, 1);
 #else
-    SetTargetFPS(gameFps);
     //--------------------------------------------------------------------------------------
 
     // Main game loop
@@ -127,8 +129,8 @@ int main(void)
 //Checking for the end of the game and manages the player lives
 //---------------------------------------------------------
 void EndOfTheGame(void) {
-    lives--;
-    if (lives == 0)
+    snake->lives--;
+    if (snake->lives == 0)
     {
         //Scoring storage (/!\ at the end of each game to minimize file reading)
         SaveStorageValue(STORAGE_POSITION_SCORE, counterTail);
@@ -172,17 +174,33 @@ void WallGeneration(void) {
     }
 }
 
-/*//Speed increase difficulty W*I*P
+//Speed increase difficulty
 //---------------------------------------------------------
 void SpeedIncrease(void) {
-    if (gameFps <= 120) {
-        gameFps == gameFps + 20;
+    if (gameFps <= 100) {
+        gameFps += 10;
         SetTargetFPS(gameFps);
     }
-}*/
-
+}
+//Permit to cross the map from right to left, from top to bottom and vice-versa
+//---------------------------------------------------------
 void CrossWall(void) {
-
+    if (snake[0].speed.x == SQUARE_SIZE && snake[0].speed.y == 0)
+    {
+        snake[0].position.x = offset.x / 2;
+    }
+    else if (snake[0].speed.x == -SQUARE_SIZE && snake[0].speed.y == 0)
+    {
+        snake[0].position.x = (screenWidth - offset.x / 2 - SQUARE_SIZE);
+    }
+    else if (snake[0].speed.x == 0 && snake[0].speed.y == -SQUARE_SIZE)
+    {
+        snake[0].position.y = (screenHeight - offset.y / 2 - SQUARE_SIZE);
+    }
+    else if (snake[0].speed.x == 0 && snake[0].speed.y == SQUARE_SIZE)
+    {
+        snake[0].position.y = offset.y / 2;
+    }
 }
 
 //Game Options window display and control
@@ -198,7 +216,7 @@ void gOptions(void) {
         if (menuSelector == 0)
         {
             DrawText(TextFormat("> SELECT DIFFICULTY ([1], [2] or [3]) : %i", gameMode+1), GetScreenWidth() / 2 - MeasureText("SELECT DIFFICULTY ([1], [2] or [3]) : 3", 20) / 2, GetScreenHeight() / 2 -50, 20, RED);
-            DrawText(TextFormat("MULTIPLE LIVES : %i", lives), GetScreenWidth() / 2 - MeasureText("MULTIPLE LIVES : 3", 20) / 2, GetScreenHeight() / 2, 20, GRAY);
+            DrawText(TextFormat("MULTIPLE LIVES : %i", snake->lives), GetScreenWidth() / 2 - MeasureText("MULTIPLE LIVES : 3", 20) / 2, GetScreenHeight() / 2, 20, GRAY);
             DrawText(TextFormat("CROSS WALLS : %i", crosswall), GetScreenWidth() / 2 - MeasureText("CROSS WALLS : 1", 20) / 2, GetScreenHeight() / 2 +50, 20, GRAY);
             if (IsKeyPressed('1'))
             {
@@ -215,21 +233,23 @@ void gOptions(void) {
         }
         else if (menuSelector == 1) {
             DrawText(TextFormat("SELECT DIFFICULTY (1, 2 or 3) : %i", gameMode+1), GetScreenWidth() / 2 - MeasureText("SELECT DIFFICULTY 1 - 2 - 3 : 3", 20) / 2, GetScreenHeight() / 2 -50, 20, GRAY);
-            DrawText(TextFormat("> MULTIPLE LIVES [Y/N] : %i", lives), GetScreenWidth() / 2 - MeasureText("MULTIPLE LIVES [Y/N] : 3", 20) / 2, GetScreenHeight() / 2, 20, RED);
+            DrawText(TextFormat("> MULTIPLE LIVES [Y/N] : %i", snake->lives), GetScreenWidth() / 2 - MeasureText("MULTIPLE LIVES [Y/N] : 3", 20) / 2, GetScreenHeight() / 2, 20, RED);
             DrawText(TextFormat("CROSS WALLS : %i", crosswall), GetScreenWidth() / 2 - MeasureText("CROSS WALLS : 1", 20) / 2, GetScreenHeight() / 2 +50, 20, GRAY);
             if (IsKeyPressed('Y'))
             {
-                lives = 3;
+                snake->lives = 3;
+                gotLives = true;
             }
             else if (IsKeyPressed('N'))
             {
-                lives = 1;
+                snake->lives = 1;
+                gotLives = false;
             }
         }
         else if (menuSelector == 2)
         {
             DrawText(TextFormat("SELECT DIFFICULTY (1, 2 or 3) : %i", gameMode+1), GetScreenWidth() / 2 - MeasureText("SELECT DIFFICULTY 1 - 2 - 3 : 3", 20) / 2, GetScreenHeight() / 2 -50, 20, GRAY);
-            DrawText(TextFormat("MULTIPLE LIVES : %i", lives), GetScreenWidth() / 2 - MeasureText("MULTIPLE LIVES : 3", 20) / 2, GetScreenHeight() / 2, 20, GRAY);
+            DrawText(TextFormat("MULTIPLE LIVES : %i", snake->lives), GetScreenWidth() / 2 - MeasureText("MULTIPLE LIVES : 3", 20) / 2, GetScreenHeight() / 2, 20, GRAY);
             DrawText(TextFormat("> CROSS WALLS [Y/N] : %i", crosswall), GetScreenWidth() / 2 - MeasureText("CROSS WALLS [Y/N] : 1", 20) / 2, GetScreenHeight() / 2 + 50, 20, RED);
             if (IsKeyPressed('Y'))
             {
@@ -249,7 +269,8 @@ void InitGame(void)
     framesCounter = 0;
     gameOver = false;
     pause = false;
-
+    if (gotLives)snake->lives = 3;
+    else snake->lives = 1;
     counterTail = 1;
     allowMove = false;
     score = LoadStorageValue(STORAGE_POSITION_SCORE);
@@ -292,6 +313,7 @@ void UpdateGame(void)
 {
     if (!gameOver && !menu)
     {
+        if (framesCounter == 0) SetTargetFPS(gameFps); // Setting the game fps
         if (IsKeyPressed('P')) pause = !pause;
 
         if (pause && IsKeyPressed('E')) {
@@ -343,13 +365,14 @@ void UpdateGame(void)
                 ((snake[0].position.y) > (screenHeight - offset.y)) ||
                 (snake[0].position.x < 0) || (snake[0].position.y < 0))
             {
-                EndOfTheGame();
+                if (crosswall) CrossWall();
+                else EndOfTheGame();
             }
 
             // Collision with yourself
             for (int i = 1; i < counterTail; i++)
             {
-                if ((snake[0].position.x == snake[i].position.x) && (snake[0].position.y == snake[i].position.y)) gameOver = true;
+                if ((snake[0].position.x == snake[i].position.x) && (snake[0].position.y == snake[i].position.y)) EndOfTheGame();
             }
 
             // Fruit position calculation
@@ -385,6 +408,7 @@ void UpdateGame(void)
                 if (gameMode == 2 && counterTail % 10 == 0) {
                     wall->active = false;
                     WallGeneration();
+                    SpeedIncrease();
                 }
             }
             //GameMode Features : wall generation
@@ -453,9 +477,9 @@ void DrawGame(void)
         // Draw fruit to pick
         DrawRectangleV(fruit.position, fruit.size, fruit.color);
 
-        //Draw score
+        //Draw score & lives
         DrawText(TextFormat("Score : %i", counterTail), 10, (GetScreenHeight() - 20), 20, BLUE);
-
+        DrawText(TextFormat("Lives : %i", snake->lives), GetScreenWidth() - MeasureText("Lives : 3", 20) - 10, (GetScreenHeight() - 20), 20, RED);
         //Draw pause during game
         if (pause)
         {
