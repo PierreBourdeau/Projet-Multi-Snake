@@ -10,7 +10,7 @@
 *   Copyright (c) 2015 Ramon Santamaria (@raysan5)
 *
 ********************************************************************************************/
-/*#include <stdio.h>
+#include <stdio.h>
 #include "raylib.h"
 #if defined(PLATFORM_WEB)
 #include <emscripten/emscripten.h>
@@ -29,6 +29,9 @@ typedef struct Snake {
     Vector2 size;
     Vector2 speed;
     Color color;
+    unsigned int lives;
+    int counterTail;
+    Vector2 snakePosition[SNAKE_LENGTH];
 } Snake;
 
 typedef struct FoodOrWall {
@@ -38,6 +41,11 @@ typedef struct FoodOrWall {
     Color color;
     bool isWall; //Added field to specify if an entity is dangerous or not
 } FoodOrWall;
+
+typedef struct multiplayers {
+    Snake** snakes;
+    unsigned int nbrOfPlayer;
+} MultiP;
 //------------------------------------------------------------------------------------
 // Global Variables Declaration
 //------------------------------------------------------------------------------------
@@ -50,13 +58,12 @@ static bool pause = false;
 static bool menu = true; //Variable that determine the active state of the menu
 static FoodOrWall fruit = { 0 };
 static FoodOrWall wall[WALL_NBR] = { 0 };
-static Snake snake[SNAKE_LENGTH] = { 0 };
-static Vector2 snakePosition[SNAKE_LENGTH] = { 0 };
 static bool allowMove = false;
 static Vector2 offset = { 0 };
-static int counterTail = 0;
+static Snake player1[SNAKE_LENGTH] = { 0 };
+static Snake player2[SNAKE_LENGTH] = { 0 };
 static unsigned int gameMode = 0;
-unsigned int lives; // Variable corresponding to the number of lives
+MultiP players = { 0 };
 //------------------------------------------------------------------------------------
 // Module Functions Declaration (local)
 //------------------------------------------------------------------------------------
@@ -123,22 +130,22 @@ int main(void)
 
 //Checking for the end of the game and manages the player lives
 //---------------------------------------------------------
-void EndOfTheGame(void) {
-    lives--;
-    if (lives == 0)
-    {
-        //Scoring storage (/!\ at the end of each game to minimize file reading)
-        SaveStorageValue(STORAGE_POSITION_SCORE, counterTail);
-        if (counterTail > hiscore) {
-            SaveStorageValue(STORAGE_POSITION_HISCORE, counterTail);
+void EndOfTheGame(Snake *aSnake) {
+        if (aSnake->lives == 0)
+        {
+            gameOver = true;
+            /*//Scoring storage (/!\ at the end of each game to minimize file reading)
+            SaveStorageValue(STORAGE_POSITION_SCORE, counterTail);
+            if (counterTail > hiscore) {
+                SaveStorageValue(STORAGE_POSITION_HISCORE, counterTail);*/
         }
-        gameOver = true;
-    }
-    else
-    {
-        snake[0].position = fruit.position; //if the player have other lifes, he restarts on the last fruit present on the map
-    }
+        else
+        {   
+             aSnake->position = fruit.position; //if the player have other lifes, he restarts on the last fruit present on the map
+        }
 }
+
+
 
 //Randomized wall generation & wall collision
 //---------------------------------------------------------
@@ -149,22 +156,25 @@ void WallGeneration(void) {
         wall->active = true;
         for (int y = 0; y < WALL_NBR; y++) {
             wall[y].position = (Vector2){ GetRandomValue(0, (screenWidth / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.x / 2, GetRandomValue(0, (screenHeight / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.y / 2 };
-            for (int k=0; k<counterTail;k++)
-            {
-                if ((wall[y].position.x == snake[k].position.x) && (wall[y].position.y == snake[k].position.y))
-                {
-                     wall[y].position = (Vector2){ GetRandomValue(0, (screenWidth / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.x / 2, GetRandomValue(0, (screenHeight / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.y / 2 };
-                     y = y-1;
-                }
+            for (int k = 0; k < players.nbrOfPlayer; k++) { // loop on nbrOfPlayer
+                for (int l = 0; l < players.snakes[k]->counterTail; l++) { // loop on both snakes length
+                    if ((wall[y].position.x == players.snakes[k][l].position.x) && (wall[y].position.y == players.snakes[k][l].position.y))
+                    {
+                        wall[y].position = (Vector2){ GetRandomValue(0, (screenWidth / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.x / 2, GetRandomValue(0, (screenHeight / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.y / 2 };
+                        y = y - 1;
+                    }
+                } 
             }
         }
     }
     // Collision between snake and walls
-    for (int i =0; i<WALL_NBR; i++) {
-        if ((snake[0].position.x < (wall[i].position.x + wall->size.x) && (snake[0].position.x + snake[0].size.x) > wall[i].position.x) &&
-            (snake[0].position.y < (wall[i].position.y + wall->size.y) && (snake[0].position.y + snake[0].size.y) > wall[i].position.y))
-        {
-            EndOfTheGame();
+    for (int i = 0; i < WALL_NBR; i++) {
+        for (int j = 0; j < players.nbrOfPlayer; j++) {
+            if ((players.snakes[j]->position.x < (wall[i].position.x + wall->size.x) && (players.snakes[j]->position.x + players.snakes[j]->size.x) > wall[i].position.x) &&
+                (players.snakes[j]->position.y < (wall[i].position.y + wall->size.y) && (players.snakes[j]->position.y + players.snakes[j]->size.y) > wall[i].position.y))
+            {
+                EndOfTheGame(players.snakes[j]);
+            }
         }
     }
 }
@@ -187,27 +197,47 @@ void InitGame(void)
     framesCounter = 0;
     gameOver = false;
     pause = false;
-
-    counterTail = 1;
+    players.nbrOfPlayer = 2;
+    players.snakes = (Snake**)malloc(3 * sizeof(Snake*));
+    players.snakes[0] = player1;
+    if (players.nbrOfPlayer == 2) {
+        players.snakes[1] = &player2;
+    }
     allowMove = false;
     score = LoadStorageValue(STORAGE_POSITION_SCORE);
     hiscore = LoadStorageValue(STORAGE_POSITION_HISCORE);
     offset.x = screenWidth % SQUARE_SIZE;
     offset.y = screenHeight % SQUARE_SIZE;
-    lives = 3;
-    for (int i = 0; i < SNAKE_LENGTH; i++)
-    {
-        snake[i].position = (Vector2){ offset.x / 2, offset.y / 2 };
-        snake[i].size = (Vector2){ SQUARE_SIZE, SQUARE_SIZE };
-        snake[i].speed = (Vector2){ SQUARE_SIZE, 0 };
 
-        if (i == 0) snake[i].color = DARKBLUE;
-        else snake[i].color = BLUE;
+    for (int i = 0; i < players.nbrOfPlayer; i++) {
+        players.snakes[i]->counterTail = 1;
+        players.snakes[i]->lives = 3;
+        for (int j = 0; j < SNAKE_LENGTH; j++)
+        {
+            players.snakes[i][j].size = (Vector2){ SQUARE_SIZE, SQUARE_SIZE };
+            players.snakes[i][j].speed = (Vector2){ SQUARE_SIZE, 0 };
+
+            if (i == 0 && j == 0) players.snakes[i][j].color = DARKBLUE;
+            else if (i == 0)
+            {
+                players.snakes[i][j].color = BLUE;
+                players.snakes[i][j].position = (Vector2){ offset.x / 2, offset.y / 2 };
+            }
+            else if (i == 1 && j == 0) players.snakes[i][j].color = ORANGE;
+            else 
+            {
+                players.snakes[i][j].color = GOLD;
+                players.snakes[i][j].position = (Vector2){ screenWidth-offset.x / 2, screenHeight-offset.y / 2 };
+
+            }
+        }
     }
 
-    for (int i = 0; i < SNAKE_LENGTH; i++)
-    {
-        snakePosition[i] = (Vector2){ 0.0f, 0.0f };
+    for (int n = 0; n < players.nbrOfPlayer; n++) {
+        for (int i = 0; i < SNAKE_LENGTH; i++)
+        {
+            players.snakes[n]->snakePosition[i] = (Vector2){ 0.0f, 0.0f };
+        }
     }
 
     fruit.size = (Vector2){ SQUARE_SIZE, SQUARE_SIZE };
@@ -232,63 +262,106 @@ void UpdateGame(void)
     if (!gameOver && !menu)
     {
         if (IsKeyPressed('P')) pause = !pause;
-        
-        if ( pause && IsKeyPressed('E')) {
+
+        if (pause && IsKeyPressed('E')) {
             menu = true;
         }
         if (!pause)
         {
-            // Player control
-            if (IsKeyPressed(KEY_RIGHT) && (snake[0].speed.x == 0) && allowMove)
+            // Player 1 control
+            if (IsKeyPressed(KEY_RIGHT) && (players.snakes[0][0].speed.x == 0) && allowMove)
             {
-                snake[0].speed = (Vector2){ SQUARE_SIZE, 0 };
+                players.snakes[0][0].speed = (Vector2){ SQUARE_SIZE, 0 };
                 allowMove = false;
             }
-            if (IsKeyPressed(KEY_LEFT) && (snake[0].speed.x == 0) && allowMove)
+            if (IsKeyPressed(KEY_LEFT) && (players.snakes[0][0].speed.x == 0) && allowMove)
             {
-                snake[0].speed = (Vector2){ -SQUARE_SIZE, 0 };
+                players.snakes[0][0].speed = (Vector2){ -SQUARE_SIZE, 0 };
                 allowMove = false;
             }
-            if (IsKeyPressed(KEY_UP) && (snake[0].speed.y == 0) && allowMove)
+            if (IsKeyPressed(KEY_UP) && (players.snakes[0][0].speed.y == 0) && allowMove)
             {
-                snake[0].speed = (Vector2){ 0, -SQUARE_SIZE };
+                players.snakes[0][0].speed = (Vector2){ 0, -SQUARE_SIZE };
                 allowMove = false;
             }
-            if (IsKeyPressed(KEY_DOWN) && (snake[0].speed.y == 0) && allowMove)
+            if (IsKeyPressed(KEY_DOWN) && (players.snakes[0][0].speed.y == 0) && allowMove)
             {
-                snake[0].speed = (Vector2){ 0, SQUARE_SIZE };
+                players.snakes[0][0].speed = (Vector2){ 0, SQUARE_SIZE };
                 allowMove = false;
             }
-
+            //Player 2 control
+            if (players.snakes[1] != NULL)
+            {
+                if (IsKeyPressed('G') && (players.snakes[1][0].speed.x == 0) && allowMove)
+                {
+                    players.snakes[1][0].speed = (Vector2){ SQUARE_SIZE, 0 };
+                    allowMove = false;
+                }
+                if (IsKeyPressed('D') && (players.snakes[1][0].speed.x == 0) && allowMove)
+                {
+                    players.snakes[1][0].speed = (Vector2){ -SQUARE_SIZE, 0 };
+                    allowMove = false;
+                }
+                if (IsKeyPressed('R') && (players.snakes[1][0].speed.y == 0) && allowMove)
+                {
+                    players.snakes[1][0].speed = (Vector2){ 0, -SQUARE_SIZE };
+                    allowMove = false;
+                }
+                if (IsKeyPressed('F') && (players.snakes[1][0].speed.y == 0) && allowMove)
+                {
+                    players.snakes[1][0].speed = (Vector2){ 0, SQUARE_SIZE };
+                    allowMove = false;
+                }
+            }
             // Snake movement
-            for (int i = 0; i < counterTail; i++) snakePosition[i] = snake[i].position;
+            for (int n = 0; n < players.nbrOfPlayer; n++) 
+            {
+                for (int i = 0; i < players.snakes[n]->counterTail; i++)
+                {
+                    players.snakes[n]->snakePosition[i] = players.snakes[n][i].position;
+                }
+            }
 
             if ((framesCounter % 5) == 0)
             {
-                for (int i = 0; i < counterTail; i++)
-                {
-                    if (i == 0)
+                for (int n = 0; n < players.nbrOfPlayer; n++) {
+                    for (int i = 0; i < players.snakes[n]->counterTail; i++)
                     {
-                        snake[0].position.x += snake[0].speed.x;
-                        snake[0].position.y += snake[0].speed.y;
-                        allowMove = true;
+                        if (i == 0)
+                        {
+                            players.snakes[n][0].position.x += players.snakes[n][0].speed.x;
+                            players.snakes[n][0].position.y += players.snakes[n][0].speed.y;
+                            allowMove = true;
+                        }
+                        else players.snakes[n][i].position = players.snakes[n]->snakePosition[i - 1];
                     }
-                    else snake[i].position = snakePosition[i - 1];
                 }
             }
 
             // Wall behaviour
-            if (((snake[0].position.x) > (screenWidth - offset.x)) ||
-                ((snake[0].position.y) > (screenHeight - offset.y)) ||
-                (snake[0].position.x < 0) || (snake[0].position.y < 0))
-            {
-                EndOfTheGame();
+            for (int n = 0; n < players.nbrOfPlayer; n++) {
+                if (((players.snakes[n][0].position.x) > (screenWidth - offset.x)) ||
+                    ((players.snakes[n][0].position.y) > (screenHeight - offset.y)) ||
+                    (players.snakes[n][0].position.x < 0) || (players.snakes[n][0].position.y < 0))
+                {
+                    EndOfTheGame(players.snakes[n]);
+                }
             }
 
             // Collision with yourself
-            for (int i = 1; i < counterTail; i++)
+            for (int n = 0; n < players.nbrOfPlayer; n++)
             {
-                if ((snake[0].position.x == snake[i].position.x) && (snake[0].position.y == snake[i].position.y)) gameOver = true;
+                for (int i = 1; i < players.snakes[n]->counterTail; i++)
+                {
+                    if ((players.snakes[n][0].position.x == players.snakes[n][i].position.x) && (players.snakes[n][0].position.y == players.snakes[n][i].position.y)) EndOfTheGame(players.snakes[n]);
+                }
+                if (players.nbrOfPlayer == 2) {
+                    for (int j = 1; j < players.snakes[n]->counterTail; j++)
+                    {
+                        if ((players.snakes[0][0].position.x == players.snakes[1][j].position.x) && (players.snakes[0][0].position.y == players.snakes[1][j].position.y)) EndOfTheGame(players.snakes[0]);
+                        else if ((players.snakes[1][0].position.x == players.snakes[0][j].position.x) && (players.snakes[1][0].position.y == players.snakes[0][j].position.y)) EndOfTheGame(players.snakes[1]);
+                    }
+                }
             }
 
             // Fruit position calculation
@@ -303,32 +376,38 @@ void UpdateGame(void)
                         i = i - 1;
                     }
                 }
-                for (int i = 0; i < counterTail; i++)
+                for (int n = 0; n < players.nbrOfPlayer; n++)
                 {
-                    while ((fruit.position.x == snake[i].position.x) && (fruit.position.y == snake[i].position.y))
+                    for (int i = 0; i < players.snakes[n]->counterTail; i++)
                     {
-                        fruit.position = (Vector2){ GetRandomValue(0, (screenWidth / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.x / 2, GetRandomValue(0, (screenHeight / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.y / 2 };
-                        i = 0;
+                        while ((fruit.position.x == players.snakes[n][i].position.x) && (fruit.position.y == players.snakes[n][i].position.y))
+                        {
+                            fruit.position = (Vector2){ GetRandomValue(0, (screenWidth / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.x / 2, GetRandomValue(0, (screenHeight / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.y / 2 };
+                            i = 0;
+                        }
                     }
                 }
             }
 
             // Collision with fruit
-            if ((snake[0].position.x < (fruit.position.x + fruit.size.x) && (snake[0].position.x + snake[0].size.x) > fruit.position.x) &&
-                (snake[0].position.y < (fruit.position.y + fruit.size.y) && (snake[0].position.y + snake[0].size.y) > fruit.position.y))
+            for (int n = 0; n < players.nbrOfPlayer; n++)
             {
-                snake[counterTail].position = snakePosition[counterTail - 1];
-                counterTail += 1;
-                fruit.active = false;
-                //If playing in gameMode 2, generate new wall configuration each 10 fruits eaten
-                if (gameMode == 2 && counterTail % 10 == 0) {
-                    wall->active = false;
-                    WallGeneration();
-                    SpeedIncrease();
+                if ((players.snakes[n][0].position.x < (fruit.position.x + fruit.size.x) && (players.snakes[n][0].position.x + players.snakes[n][0].size.x) > fruit.position.x) &&
+                    (players.snakes[n][0].position.y < (fruit.position.y + fruit.size.y) && (players.snakes[n][0].position.y + players.snakes[n][0].size.y) > fruit.position.y))
+                {
+                    players.snakes[n][players.snakes[n]->counterTail].position = players.snakes[n]->snakePosition[players.snakes[n]->counterTail - 1];
+                    players.snakes[n]->counterTail += 1;
+                    fruit.active = false;
+                    //If playing in gameMode 2, generate new wall configuration each 10 fruits eaten
+                    if (gameMode == 2 && players.snakes[0]->counterTail % 10 == 0 && players.nbrOfPlayer == 1) {
+                        wall->active = false;
+                        WallGeneration();
+                        SpeedIncrease();
+                    }
                 }
             }
             //GameMode Features : wall generation
-            if (gameMode == 1 || gameMode ==2)
+            if (gameMode == 1 || gameMode == 2)
                 WallGeneration();
 
             framesCounter++;
@@ -393,19 +472,28 @@ void DrawGame(void)
         }
 
         //Drawn walls
-        for (int i =0; i< WALL_NBR; i++) DrawRectangleV(wall[i].position, wall[i].size, wall->color);
+        for (int i = 0; i < WALL_NBR; i++) DrawRectangleV(wall[i].position, wall[i].size, wall->color);
 
         // Draw snake
-        for (int i = 0; i < counterTail; i++) DrawRectangleV(snake[i].position, snake[i].size, snake[i].color);
+        for (int n = 0; n < players.nbrOfPlayer; n++) 
+        {
+            for (int i = 0; i < players.snakes[n]->counterTail; i++) 
+            {
+                DrawRectangleV(players.snakes[n][i].position, players.snakes[n][i].size, players.snakes[n][i].color);
+            }
+        }
 
         // Draw fruit to pick
         DrawRectangleV(fruit.position, fruit.size, fruit.color);
 
         //Draw score
-        DrawText(TextFormat("Score : %i", counterTail), 10, (GetScreenHeight() - 20), 20, BLUE);
-
+        DrawText(TextFormat("Score Player 1 : %i", players.snakes[0]->counterTail), 10, (GetScreenHeight() - 20), 20, BLUE);
+        if (players.nbrOfPlayer == 2)
+        {
+            DrawText(TextFormat("Score Player 2 : %i", players.snakes[1]->counterTail), GetScreenWidth()- 10, (GetScreenHeight() - 20), 20, BLUE);
+        }
         //Draw pause during game
-        if (pause) 
+        if (pause)
         {
             DrawText("GAME PAUSED", screenWidth / 2 - MeasureText("GAME PAUSED", 40) / 2, screenHeight / 2 - 40, 40, GRAY);
             DrawText("PRESS [E] FOR MENU", screenWidth / 2 - MeasureText("PRESS [E] FOR MENU", 40) / 2, screenHeight / 2, 40, RED);
@@ -421,8 +509,8 @@ void DrawGame(void)
     {
         DrawText("MENU", GetScreenWidth() / 2 - MeasureText("MENU", 20) / 2, GetScreenHeight() / 2 - 50, 20, GRAY);
         DrawText("SELECT DIFFICULTY 1 - 2 - 3", GetScreenWidth() / 2 - MeasureText("SELECT DIFFICULTY 1 - 2 - 3", 20) / 2, GetScreenHeight() / 2, 20, RED);
-        DrawText(TextFormat("Last score : %i || Best score : %i", score, hiscore), GetScreenWidth()/2 - MeasureText("Last score : 10 || Best score : 20", 20) /2 , GetScreenHeight() /2+50, 20,ORANGE);
-        DrawText("PRESS [ESC] TO LEAVE", GetScreenWidth() / 2 - MeasureText("PRESS [ESC] TO LEAVE", 20) / 2, GetScreenHeight()- 50, 20 , DARKGRAY);
+        DrawText(TextFormat("Last score : %i || Best score : %i", score, hiscore), GetScreenWidth() / 2 - MeasureText("Last score : 10 || Best score : 20", 20) / 2, GetScreenHeight() / 2 + 50, 20, ORANGE);
+        DrawText("PRESS [ESC] TO LEAVE", GetScreenWidth() / 2 - MeasureText("PRESS [ESC] TO LEAVE", 20) / 2, GetScreenHeight() - 50, 20, DARKGRAY);
     }
     EndDrawing();
 }
@@ -431,7 +519,10 @@ void DrawGame(void)
 //---------------------------------------------------------
 void UnloadGame(void)
 {
-    // TODO: Unload all dynamic loaded data (textures, sounds, models...)
+    if (players.nbrOfPlayer == 2) {
+        free(players.snakes[1]);
+    }
+    free(players.snakes[0]);
 }
 
 // Update and Draw (one frame)
@@ -440,4 +531,4 @@ void UpdateDrawFrame(void)
 {
     UpdateGame();
     DrawGame();
-}*/
+}

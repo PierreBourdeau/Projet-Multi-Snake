@@ -328,6 +328,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="core_basic_window.c" />
+    <ClCompile Include="main.c">
+      <SubType>
+      </SubType>
+    </ClCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
