@@ -10,6 +10,8 @@
 *   Copyright (c) 2015 Ramon Santamaria (@raysan5)
 *
 ********************************************************************************************/
+
+/*
 #include <stdio.h>
 #include "raylib.h"
 #if defined(PLATFORM_WEB)
@@ -291,7 +293,6 @@ void InitGame(void)
         snake[i].position = (Vector2){ offset.x / 2, offset.y / 2 };
         snake[i].size = (Vector2){ SQUARE_SIZE, SQUARE_SIZE };
         snake[i].speed = (Vector2){ SQUARE_SIZE, 0 };
-
         if (i == 0) snake[i].color = DARKBLUE;
         else snake[i].color = BLUE;
     }
@@ -532,3 +533,4 @@ void UpdateDrawFrame(void)
     UpdateGame();
     DrawGame();
 }
+*/

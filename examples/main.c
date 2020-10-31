@@ -10,7 +10,8 @@
 *   Copyright (c) 2015 Ramon Santamaria (@raysan5)
 *
 ********************************************************************************************/
-/*#include <stdio.h>
+
+#include <stdio.h>
 #include "raylib.h"
 #if defined(PLATFORM_WEB)
 #include <emscripten/emscripten.h>
@@ -44,7 +45,7 @@ typedef struct FoodOrWall {
 
 typedef struct multiplayers {
     unsigned int nbrOfPlayer;
-    Snake* snakes[2];
+    Snake* snakes[SNAKE_LENGTH];
 } MultiP;
 //------------------------------------------------------------------------------------
 // Global Variables Declaration
@@ -73,7 +74,7 @@ static void DrawGame(void);         // Draw game (one frame)
 static void UnloadGame(void);       // Unload game
 static void UpdateDrawFrame(void);  // Update and Draw (one frame)
 //------------------------------------------------------------------------------------
-// Score storage variables declaratio
+// Score storage variables declaration
 //------------------------------------------------------------------------------------
 typedef enum {
     STORAGE_POSITION_SCORE = 0,
@@ -130,21 +131,21 @@ int main(void)
 
 //Checking for the end of the game and manages the player lives
 //---------------------------------------------------------
-void EndOfTheGame(Snake *aSnake) {
+void EndOfTheGame(Snake* aSnake) {
     aSnake->lives--;
-        if (aSnake->lives == 0)
-        {
-            gameOver = true;
-            //Scoring storage (/!\ at the end of each game to minimize file reading)
-            SaveStorageValue(STORAGE_POSITION_SCORE, counterTail);
-            if (counterTail > hiscore) {
-                SaveStorageValue(STORAGE_POSITION_HISCORE, counterTail);
-        }
-        else
-        {   
-            aSnake->position = fruit.position; //if the player have other lifes, he restarts on the last fruit present on the map
-            aSnake->counterTail--;
-        }
+    if (aSnake->lives == 0)
+    {
+        gameOver = true;
+        //Scoring storage (/!\ at the end of each game to minimize file reading)
+//        SaveStorageValue(STORAGE_POSITION_SCORE, counterTail);
+ //       if (counterTail > hiscore) {
+ //           SaveStorageValue(STORAGE_POSITION_HISCORE, counterTail);
+    }
+    else
+    {
+        aSnake->position = fruit.position; //if the player have other lifes, he restarts on the last fruit present on the map
+        aSnake->counterTail--;
+    }
 }
 
 
@@ -165,7 +166,7 @@ void WallGeneration(void) {
                         wall[y].position = (Vector2){ GetRandomValue(0, (screenWidth / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.x / 2, GetRandomValue(0, (screenHeight / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.y / 2 };
                         y = y - 1;
                     }
-                } 
+                }
             }
         }
     }
@@ -220,21 +221,21 @@ void InitGame(void)
             {
                 players.snakes[i][j].color = DARKBLUE;
             }
-            else if (i == 0) // player 1 snake
+            if (i == 0) // player 1 snake
             {
                 players.snakes[i][j].color = BLUE;
-                players.snakes[i][j].position = (Vector2){ offset.x / 2, offset.y / 2 };
+                players.snakes[i][j].position = (Vector2){offset.x / 2, offset.y / 2 };
                 players.snakes[i][j].speed = (Vector2){ SQUARE_SIZE, 0 };
             }
-            else if (i == 1 && j == 0) // player 2 snake head
+            if (i == 1 && j == 0) // player 2 snake head
             {
                 players.snakes[i][j].color = ORANGE;
             }
-            else if (i==1) // player 2 snake
+            if (i == 1) // player 2 snake
             {
                 players.snakes[i][j].color = GOLD;
-                players.snakes[i][j].position = (Vector2){ (screenWidth - (offset.x/2)), (screenHeight - (offset.y/2))};
-                players.snakes[i][j].speed = (Vector2){-SQUARE_SIZE, 0 };
+                players.snakes[i][j].position = (Vector2){ screenWidth - offset.x / 2 - SQUARE_SIZE, screenHeight - offset.y / 2 - SQUARE_SIZE };
+                players.snakes[i][j].speed = (Vector2){ -SQUARE_SIZE, 0 };
             }
         }
     }
@@ -320,7 +321,7 @@ void UpdateGame(void)
                 }
             }
             // Snake movement
-            for (int n = 0; n < players.nbrOfPlayer; n++) 
+            for (int n = 0; n < players.nbrOfPlayer; n++)
             {
                 for (int i = 0; i < players.snakes[n]->counterTail; i++)
                 {
@@ -425,7 +426,6 @@ void UpdateGame(void)
         if (IsKeyPressed(KEY_ENTER))
         {
             InitGame();
-            gameOver = false;
         }
         else if (IsKeyPressed('E')) {
             InitGame();
@@ -481,9 +481,9 @@ void DrawGame(void)
         for (int i = 0; i < WALL_NBR; i++) DrawRectangleV(wall[i].position, wall[i].size, wall->color);
 
         // Draw snake
-        for (int n = 0; n < players.nbrOfPlayer; n++) 
+        for (int n = 0; n < players.nbrOfPlayer; n++)
         {
-            for (int i = 0; i < players.snakes[n]->counterTail; i++) 
+            for (int i = 0; i < players.snakes[n]->counterTail; i++)
             {
                 DrawRectangleV(players.snakes[n][i].position, players.snakes[n][i].size, players.snakes[n][i].color);
             }
@@ -534,4 +534,4 @@ void UpdateDrawFrame(void)
 {
     UpdateGame();
     DrawGame();
-}*/
+}
