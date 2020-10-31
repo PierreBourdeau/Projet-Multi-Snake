@@ -288,7 +288,7 @@ void WallGeneration(void) {
             wall[y].position = (Vector2){ GetRandomValue(0, (screenWidth / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.x / 2, GetRandomValue(0, (screenHeight / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.y / 2 };
             for (int k = 0; k < players.nbrOfPlayer; k++) { // loop on nbrOfPlayer
                 for (int l = 0; l < players.snakes[k]->counterTail; l++) { // loop on both snakes length
-                    if ((wall[y].position.x == players.snakes[k][l].position.x) && (wall[y].position.y == players.snakes[k][l].position.y) || wall[y].position.x - players.snakes[k][0].position.x < (5 * SQUARE_SIZE) || wall[y].position.y - players.snakes[k][0].position.y < (5 * SQUARE_SIZE))
+                    if ((wall[y].position.x == players.snakes[k][l].position.x) && (wall[y].position.y == players.snakes[k][l].position.y))
                     {
                         wall[y].position = (Vector2){ GetRandomValue(0, (screenWidth / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.x / 2, GetRandomValue(0, (screenHeight / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.y / 2 };
                         y = y - 1;
