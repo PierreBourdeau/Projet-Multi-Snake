@@ -331,7 +331,7 @@
       <SubType>
       </SubType>
     </ClCompile>
-    <ClCompile Include="main.c">
+    <ClCompile Include="main_snake_multi.c">
       <SubType>
       </SubType>
     </ClCompile>
