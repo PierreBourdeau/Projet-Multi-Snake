@@ -285,7 +285,7 @@ void WallGeneration(void) {
         wall->active = true;
         for (int y = 0; y < WALL_NBR; y++) {
             wall[y].position = (Vector2){ GetRandomValue(0, (screenWidth / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.x / 2, GetRandomValue(0, (screenHeight / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.y / 2 };
-            for (int k = 0; k < players.nbrOfPlayer; k++) { // loop on nbrOfPlayer
+            for (unsigned int k = 0; k < players.nbrOfPlayer; k++) { // loop on nbrOfPlayer
                 for (int l = 0; l < players.snakes[k]->counterTail; l++) { // loop on both snakes length
                     if ((wall[y].position.x == players.snakes[k][l].position.x) && (wall[y].position.y == players.snakes[k][l].position.y))
                     {
@@ -298,7 +298,7 @@ void WallGeneration(void) {
     }
     // Collision between snake and walls
     for (int i = 0; i < WALL_NBR; i++) {
-        for (int j = 0; j < players.nbrOfPlayer; j++) {
+        for (unsigned int j = 0; j < players.nbrOfPlayer; j++) {
             if ((players.snakes[j]->position.x < (wall[i].position.x + wall->size.x) && (players.snakes[j]->position.x + players.snakes[j]->size.x) > wall[i].position.x) &&
                 (players.snakes[j]->position.y < (wall[i].position.y + wall->size.y) && (players.snakes[j]->position.y + players.snakes[j]->size.y) > wall[i].position.y))
             {
@@ -338,7 +338,7 @@ void InitGame(void)
     offset.x = screenWidth % SQUARE_SIZE;
     offset.y = screenHeight % SQUARE_SIZE;
 
-    for (int i = 0; i < players.nbrOfPlayer; i++) {
+    for (unsigned int i = 0; i < players.nbrOfPlayer; i++) {
         players.snakes[i]->counterTail = 1;
         if (gotLives)players.snakes[i]->lives = 3;
         else players.snakes[i]->lives = 1;
@@ -368,7 +368,7 @@ void InitGame(void)
         }
     }
 
-    for (int n = 0; n < players.nbrOfPlayer; n++) {
+    for (unsigned int n = 0; n < players.nbrOfPlayer; n++) {
         for (int i = 0; i < SNAKE_LENGTH; i++)
         {
             players.snakes[n]->snakePosition[i] = (Vector2){ 0.0f, 0.0f };;
@@ -450,7 +450,7 @@ void UpdateGame(void)
                 }
             }
             // Snake movement
-            for (int n = 0; n < players.nbrOfPlayer; n++)
+            for (unsigned int n = 0; n < players.nbrOfPlayer; n++)
             {
                 for (int i = 0; i < players.snakes[n]->counterTail; i++)
                 {
@@ -459,7 +459,7 @@ void UpdateGame(void)
             }
             if ((framesCounter % 5) == 0)
             {
-                for (int n = 0; n < players.nbrOfPlayer; n++) {
+                for (unsigned int n = 0; n < players.nbrOfPlayer; n++) {
                     for (int i = 0; i < players.snakes[n]->counterTail; i++)
                     {
                         if (i == 0)
@@ -473,7 +473,7 @@ void UpdateGame(void)
                 }
             }
             // Wall (board) behaviour
-            for (int n = 0; n < players.nbrOfPlayer; n++) {
+            for (unsigned int n = 0; n < players.nbrOfPlayer; n++) {
                 if (((players.snakes[n][0].position.x) > (screenWidth - offset.x)) ||
                     ((players.snakes[n][0].position.y) > (screenHeight - offset.y)) ||
                     (players.snakes[n][0].position.x < 0) || (players.snakes[n][0].position.y < 0))
@@ -483,7 +483,7 @@ void UpdateGame(void)
                 }
             }
             // Collision with yourself or with other snake
-            for (int n = 0; n < players.nbrOfPlayer; n++)
+            for (unsigned int n = 0; n < players.nbrOfPlayer; n++)
             {
                 for (int i = 1; i < players.snakes[n]->counterTail; i++)
                 {
@@ -514,7 +514,7 @@ void UpdateGame(void)
                         i = i - 1;
                     }
                 }
-                for (int n = 0; n < players.nbrOfPlayer; n++)
+                for (unsigned int n = 0; n < players.nbrOfPlayer; n++)
                 {
                     for (int i = 0; i < players.snakes[n]->counterTail; i++)
                     {
@@ -527,7 +527,7 @@ void UpdateGame(void)
                 }
             }
             // Collision with fruit
-            for (int n = 0; n < players.nbrOfPlayer; n++)
+            for (unsigned int n = 0; n < players.nbrOfPlayer; n++)
             {
                 if ((players.snakes[n][0].position.x < (fruit.position.x + fruit.size.x) && (players.snakes[n][0].position.x + players.snakes[n][0].size.x) > fruit.position.x) &&
                     (players.snakes[n][0].position.y < (fruit.position.y + fruit.size.y) && (players.snakes[n][0].position.y + players.snakes[n][0].size.y) > fruit.position.y))
@@ -536,7 +536,7 @@ void UpdateGame(void)
                     players.snakes[n]->counterTail += 1;
                     fruit.active = false;
                     //If playing in gameMode 2, generate new wall configuration each 10 fruits eaten
-                    if (gameMode == 2 && players.snakes[0]->counterTail % 10 == 0 || players.snakes[1]->counterTail %10 == 0) {
+                    if (gameMode == 2 && (players.snakes[0]->counterTail % 10 == 0 || players.snakes[1]->counterTail %10 == 0)) {
                         wall->active = false;
                         WallGeneration();
                         SpeedIncrease();
@@ -600,7 +600,7 @@ void DrawGame(void)
         for (int i = 0; i < WALL_NBR; i++) DrawRectangleV(wall[i].position, wall[i].size, wall->color);
 
         // Draw snake
-        for (int n = 0; n < players.nbrOfPlayer; n++)
+        for (unsigned int n = 0; n < players.nbrOfPlayer; n++)
         {
             for (int i = 0; i < players.snakes[n]->counterTail; i++)
             {
