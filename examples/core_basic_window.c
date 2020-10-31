@@ -505,7 +505,6 @@ void DrawGame(void)
     //Draw menu
     else if (menu && !options)
     {
-
         DrawText("MENU", GetScreenWidth() / 2 - MeasureText("MENU", 20) / 2, GetScreenHeight() / 2 - 50, 20, GRAY);
         DrawText("[O] - OPTIONS", GetScreenWidth() / 2 - MeasureText("[O] - OPTIONS", 20) / 2, GetScreenHeight() / 2, 20, RED);
         DrawText(TextFormat("Last score : %i || Best score : %i", score, hiscore), GetScreenWidth() / 2 - MeasureText("Last score : 10 || Best score : 20", 20) / 2, GetScreenHeight() / 2 + 50, 20, ORANGE);
