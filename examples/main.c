@@ -13,7 +13,6 @@
 *   
 ********************************************************************************************/
 
-#include <stdio.h>
 #include "raylib.h"
 #if defined(PLATFORM_WEB)
 #include <emscripten/emscripten.h>
@@ -265,11 +264,11 @@ void EndOfTheGame(Snake* aSnake) {
             aSnake->counterTail--;
         }
         else if (multiplayer) { //if the player have other lifes, he restarts at the spawning point (only in multiplayers)
-            if (aSnake = players.snakes[0]) { 
+            if (aSnake == players.snakes[0]) { 
                 players.snakes[0]->position = (Vector2){ offset.x / 2, offset.y / 2 }; 
                 players.snakes[0]->speed = (Vector2){ SQUARE_SIZE, 0 };
             }
-            if (aSnake = players.snakes[1]) {
+            if (aSnake == players.snakes[1]) {
                 players.snakes[1][0].position = (Vector2){ screenWidth - offset.x / 2 - SQUARE_SIZE, screenHeight - offset.y / 2 - SQUARE_SIZE };
                 players.snakes[1][0].speed = (Vector2){ -SQUARE_SIZE, 0 };
             }
@@ -309,7 +308,7 @@ void WallGeneration(void) {
     }
 }
 
-//Speed increase difficulty W*I*P
+//Speed increase difficulty 
 //---------------------------------------------------------
 void SpeedIncrease(void) {
     if (gameFps <= 100) {
@@ -325,6 +324,7 @@ void InitGame(void)
     framesCounter = 0;
     gameOver = false;
     pause = false;
+    gameFps = 60;
     if (multiplayer)players.nbrOfPlayer = 2;
     else players.nbrOfPlayer = 1;
     players.snakes[0] = player1;
@@ -385,6 +385,7 @@ void InitGame(void)
             wall[i].size = (Vector2){ SQUARE_SIZE, SQUARE_SIZE };
             wall[i].color = BEIGE;
             wall[i].active = false;
+            wall[i].position = (Vector2){0,0};
         }
     }
 }
@@ -489,10 +490,15 @@ void UpdateGame(void)
                     if ((players.snakes[n][0].position.x == players.snakes[n][i].position.x) && (players.snakes[n][0].position.y == players.snakes[n][i].position.y)) EndOfTheGame(players.snakes[n]);
                 }
                 if (players.nbrOfPlayer == 2) {
-                    for (int j = 0; j < players.snakes[n]->counterTail; j++)
+                    for (int j = 1; j < players.snakes[n]->counterTail; j++)
                     {
                         if ((players.snakes[0][0].position.x == players.snakes[1][j].position.x) && (players.snakes[0][0].position.y == players.snakes[1][j].position.y)) EndOfTheGame(players.snakes[0]);
                         else if ((players.snakes[1][0].position.x == players.snakes[0][j].position.x) && (players.snakes[1][0].position.y == players.snakes[0][j].position.y)) EndOfTheGame(players.snakes[1]);
+                    }
+                    if (players.snakes[0][0].position.x == players.snakes[1][0].position.x && players.snakes[0][0].position.y == players.snakes[1][0].position.y)
+                    {
+                        EndOfTheGame(players.snakes[0]);
+                        EndOfTheGame(players.snakes[1]);
                     }
                 }
             }
@@ -530,7 +536,7 @@ void UpdateGame(void)
                     players.snakes[n]->counterTail += 1;
                     fruit.active = false;
                     //If playing in gameMode 2, generate new wall configuration each 10 fruits eaten
-                    if (gameMode == 2 && players.snakes[0]->counterTail % 10 == 0) {
+                    if (gameMode == 2 && players.snakes[0]->counterTail % 10 == 0 || players.snakes[1]->counterTail %10 == 0) {
                         wall->active = false;
                         WallGeneration();
                         SpeedIncrease();
@@ -609,6 +615,7 @@ void DrawGame(void)
         DrawText(TextFormat("Score Player 1 : %i", players.snakes[0]->counterTail), 10, (GetScreenHeight() - 80), 25, BLUE);
         DrawText(TextFormat("Player 1 : %i lives", players.snakes[0]->lives), 10, (GetScreenHeight() - 45), 25, MAROON);
         DrawText(TextFormat("HISCORE : %i", hiscore), GetScreenWidth() / 2 - MeasureText("HISCORE : %i", 30) / 2, (GetScreenHeight() - 80), 30, GRAY);
+        DrawText(TextFormat("FPS : %i", gameFps), GetScreenWidth() / 2 - MeasureText("FPS : %i", 25) / 2, (GetScreenHeight() - 40), 25, RED);
         if (players.nbrOfPlayer == 2)
         {
             DrawText(TextFormat("Score Player 2 : %i", players.snakes[1]->counterTail), GetScreenWidth() - MeasureText("Score Player 2 : %i", 25) - 10, (GetScreenHeight() - 80), 25, ORANGE);
@@ -625,6 +632,12 @@ void DrawGame(void)
     else if (!menu && gameOver && !options) {
         DrawText("PRESS [ENTER] TO PLAY AGAIN", GetScreenWidth() / 2 - MeasureText("PRESS [ENTER] TO PLAY AGAIN", 20) / 2, GetScreenHeight() / 2 - 50, 20, GRAY);
         DrawText("PRESS [E] FOR MENU", GetScreenWidth() / 2 - MeasureText("PRESS [E] FOR MENU", 20) / 2, GetScreenHeight() / 2, 20, RED);
+        if (multiplayer) 
+        {
+            if (players.snakes[0]->lives == 0){ DrawText("PLAYER 2 WINS", GetScreenWidth() / 2 - MeasureText("PLAYER 2 WINS", 20) / 2, GetScreenHeight() / 2 +100, 20, GOLD); }
+            else if (players.snakes[1]->lives ==0) { DrawText("PLAYER 1 WINS", GetScreenWidth() / 2 - MeasureText("PLAYER 1 WINS", 20) / 2, GetScreenHeight() / 2 + 100, 20, GOLD); }
+            else if (players.snakes[0]->lives == 0 && players.snakes[1]->lives == 0){ DrawText("DRAW", GetScreenWidth() / 2 - MeasureText("DRAW", 20) / 2, GetScreenHeight() / 2 + 100, 20, GOLD); }
+        }
     }
     //Draw menu
     else if (menu && !options)
