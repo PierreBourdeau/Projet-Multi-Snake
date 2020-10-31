@@ -1,14 +1,16 @@
 /*******************************************************************************************
 *
-*   raylib - sample game: snake
+*   raylib - sample game: snake (Multiplayer mode)
 *
-*   Sample game developed by Ian Eito, Albert Martos and Ramon Santamaria
+*   Sample game originally developed by Ian Eito, Albert Martos and Ramon Santamaria
+* 
+*   Modified by : Pierre Bourdeau adding features such as : Multiplayer mode, Menus, Options, Lives, Wall generation, Cross wall, Speed Increase, GameModes...
 *
 *   This game has been created using raylib v1.3 (www.raylib.com)
 *   raylib is licensed under an unmodified zlib/libpng license (View raylib.h for details)
 *
 *   Copyright (c) 2015 Ramon Santamaria (@raysan5)
-*
+*   
 ********************************************************************************************/
 
 #include <stdio.h>
@@ -56,7 +58,6 @@ unsigned int gameFps = 60;
 static int framesCounter = 0;
 static bool gameOver = false;
 static bool pause = false;
-static bool menu = true; //Variable that determine the active state of the menu
 static FoodOrWall fruit = { 0 };
 static FoodOrWall wall[WALL_NBR] = { 0 };
 static bool allowMove = false;
@@ -69,7 +70,8 @@ static bool gotLives; // Variable corresponding to the number of lives
 static unsigned int menuSelector = 0; //Variable to navigate into options menu
 static bool options = false; //Variable that determine the active state of option page
 static bool crosswall = false; //Variable to allow or disable cross wall game rule
-static bool multiplayer = true;
+static bool multiplayer = true; // Variable to set multiplayer mode on or off
+static bool menu = true; //Variable that determine the active state of the menu
 //------------------------------------------------------------------------------------
 // Module Functions Declaration (local)
 //------------------------------------------------------------------------------------
@@ -81,42 +83,42 @@ static void UpdateDrawFrame(void);           // Update and Draw (one frame)
 static void WallGeneration(void);            //Randomized wall generation & wall collision
 static void SpeedIncrease(void);             //In game mode 2, increase game fps of +10 every 10 fruits eaten
 static void EndOfTheGame(Snake *aSnake);     //Check for the end of the game and manages the player lives
-void CrossWall(Snake* aSnake);               //Permit to cross the map from right to left, from top to bottom and vice-versa
+static void CrossWall(Snake* aSnake);        //Permit to cross the map from right to left, from top to bottom and vice-versa
 //------------------------------------------------------------------------------------
 // Score storage variables declaration
 //------------------------------------------------------------------------------------
 typedef enum {
     STORAGE_POSITION_SCORE = 0,
-    STORAGE_POSITION_HISCORE = 1
+    STORAGE_POSITION_HISCORE = 1,
+    STORAGE_POSITION_SCORE2 = 3
 } StorageData;
-static int score; //score of the last run
+static int score; //score of the last run (player 1)
+static int score2; //score of the last run (player 2)
 static int hiscore; //highest score
+
 //------------------------------------------------------------------------------------
 // Program main entry point
 //------------------------------------------------------------------------------------
 int main(void)
-
 {
     //Setting default data values of scores to 0 in the file storage.data (1st start of the game)
     //---------------------------------------------------------
     if (LoadStorageValue(STORAGE_POSITION_SCORE) == NULL) {
         SaveStorageValue(STORAGE_POSITION_HISCORE, 0);
         SaveStorageValue(STORAGE_POSITION_SCORE, 0);
+        SaveStorageValue(STORAGE_POSITION_SCORE2, 0);
     }
+
     // Initialization (Note windowTitle is unused on Android)
     //---------------------------------------------------------
-    
-    
-    InitWindow(screenWidth , screenHeight, "SNAKE V.2");
+    InitWindow(screenWidth , screenHeight + 100, "SNAKE V.2");
 
     InitGame();
 
 #if defined(PLATFORM_WEB)
     emscripten_set_main_loop(UpdateDrawFrame, 60, 1);
 #else
-
     //--------------------------------------------------------------------------------------
-
     // Main game loop
     while (!WindowShouldClose())    // Detect window close button or ESC key
     {
@@ -132,14 +134,15 @@ int main(void)
 
     CloseWindow();        // Close window and OpenGL context
     //--------------------------------------------------------------------------------------
-
     return 0;
 }
 
 //------------------------------------------------------------------------------------
 // Module Functions Definitions (local)
 //------------------------------------------------------------------------------------
+
 //Game Options window display and control
+//---------------------------------------------------------
 void gOptions(void) {
     ClearBackground(RAYWHITE);
     DrawText("OPTIONS", GetScreenWidth() / 2 - MeasureText("OPTIONS", 20) / 2, GetScreenHeight() / 2 - 100, 20, GRAY);
@@ -204,7 +207,7 @@ void gOptions(void) {
             crosswall = false;
         }
     }
-    //control options : enable/disable cross wall
+    //control options : enable/disable multiplayer mode
     else if (menuSelector == 3)
     {
         DrawText(TextFormat("SELECT DIFFICULTY (1, 2 or 3) : %i", gameMode + 1), GetScreenWidth() / 2 - MeasureText("SELECT DIFFICULTY 1 - 2 - 3 : 3", 20) / 2, GetScreenHeight() / 2 - 50, 20, GRAY);
@@ -248,18 +251,31 @@ void EndOfTheGame(Snake* aSnake) {
     {
         gameOver = true;
         //Scoring storage (/!\ at the end of each game to minimize file reading)
-//        SaveStorageValue(STORAGE_POSITION_SCORE, counterTail);
- //       if (counterTail > hiscore) {
- //           SaveStorageValue(STORAGE_POSITION_HISCORE, counterTail);
+        SaveStorageValue(STORAGE_POSITION_SCORE, players.snakes[0]->counterTail);
+        if (multiplayer) SaveStorageValue(STORAGE_POSITION_SCORE2, players.snakes[1]->counterTail);
+        if (players.snakes[0]->counterTail > hiscore)
+           SaveStorageValue(STORAGE_POSITION_HISCORE, players.snakes[0]->counterTail);
+        else if (multiplayer && players.snakes[1]->counterTail > hiscore)
+            SaveStorageValue(STORAGE_POSITION_HISCORE, players.snakes[1]->counterTail);
     }
     else
     {
-        aSnake->position = fruit.position; //if the player have other lifes, he restarts on the last fruit present on the map
-        aSnake->counterTail--;
+        if (!multiplayer) {
+            aSnake->position = fruit.position; //if the player have other lifes, he restarts on the last fruit present on the map (only in Solo mode)
+            aSnake->counterTail--;
+        }
+        else if (multiplayer) { //if the player have other lifes, he restarts at the spawning point (only in multiplayers)
+            if (aSnake = players.snakes[0]) { 
+                players.snakes[0]->position = (Vector2){ offset.x / 2, offset.y / 2 }; 
+                players.snakes[0]->speed = (Vector2){ SQUARE_SIZE, 0 };
+            }
+            if (aSnake = players.snakes[1]) {
+                players.snakes[1][0].position = (Vector2){ screenWidth - offset.x / 2 - SQUARE_SIZE, screenHeight - offset.y / 2 - SQUARE_SIZE };
+                players.snakes[1][0].speed = (Vector2){ -SQUARE_SIZE, 0 };
+            }
+        }
     }
 }
-
-
 
 //Randomized wall generation & wall collision
 //---------------------------------------------------------
@@ -272,7 +288,7 @@ void WallGeneration(void) {
             wall[y].position = (Vector2){ GetRandomValue(0, (screenWidth / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.x / 2, GetRandomValue(0, (screenHeight / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.y / 2 };
             for (int k = 0; k < players.nbrOfPlayer; k++) { // loop on nbrOfPlayer
                 for (int l = 0; l < players.snakes[k]->counterTail; l++) { // loop on both snakes length
-                    if ((wall[y].position.x == players.snakes[k][l].position.x) && (wall[y].position.y == players.snakes[k][l].position.y))
+                    if ((wall[y].position.x == players.snakes[k][l].position.x) && (wall[y].position.y == players.snakes[k][l].position.y) || wall[y].position.x - players.snakes[k][0].position.x < (5 * SQUARE_SIZE) || wall[y].position.y - players.snakes[k][0].position.y < (5 * SQUARE_SIZE))
                     {
                         wall[y].position = (Vector2){ GetRandomValue(0, (screenWidth / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.x / 2, GetRandomValue(0, (screenHeight / SQUARE_SIZE) - 1) * SQUARE_SIZE + offset.y / 2 };
                         y = y - 1;
@@ -317,6 +333,7 @@ void InitGame(void)
     }
     allowMove = false;
     score = LoadStorageValue(STORAGE_POSITION_SCORE);
+    score2 = LoadStorageValue(STORAGE_POSITION_SCORE2);
     hiscore = LoadStorageValue(STORAGE_POSITION_HISCORE);
     offset.x = screenWidth % SQUARE_SIZE;
     offset.y = screenHeight % SQUARE_SIZE;
@@ -372,7 +389,6 @@ void InitGame(void)
     }
 }
 
-
 // Update game (one frame)
 //---------------------------------------------------------
 void UpdateGame(void)
@@ -409,7 +425,7 @@ void UpdateGame(void)
                 allowMove = false;
             }
             //Player 2 control
-            if (players.snakes[1] != NULL)
+            if (multiplayer)
             {
                 if (IsKeyPressed('G') && (players.snakes[1][0].speed.x == 0) && allowMove)
                 {
@@ -440,7 +456,6 @@ void UpdateGame(void)
                     players.snakes[n]->snakePosition[i] = players.snakes[n][i].position;
                 }
             }
-
             if ((framesCounter % 5) == 0)
             {
                 for (int n = 0; n < players.nbrOfPlayer; n++) {
@@ -456,8 +471,7 @@ void UpdateGame(void)
                     }
                 }
             }
-
-            // Wall behaviour
+            // Wall (board) behaviour
             for (int n = 0; n < players.nbrOfPlayer; n++) {
                 if (((players.snakes[n][0].position.x) > (screenWidth - offset.x)) ||
                     ((players.snakes[n][0].position.y) > (screenHeight - offset.y)) ||
@@ -467,7 +481,6 @@ void UpdateGame(void)
                     else EndOfTheGame(players.snakes[n]);
                 }
             }
-
             // Collision with yourself or with other snake
             for (int n = 0; n < players.nbrOfPlayer; n++)
             {
@@ -483,7 +496,6 @@ void UpdateGame(void)
                     }
                 }
             }
-
             // Fruit position calculation
             if (!fruit.active)
             {
@@ -508,7 +520,6 @@ void UpdateGame(void)
                     }
                 }
             }
-
             // Collision with fruit
             for (int n = 0; n < players.nbrOfPlayer; n++)
             {
@@ -548,13 +559,13 @@ void UpdateGame(void)
     //Menu controls
     else
     {
-    if (IsKeyPressed(KEY_O)) {
-        options = true;
-    }
-    else if (IsKeyPressed(KEY_SPACE)) {
-        InitGame();
-        menu = false;
-    }
+        if (IsKeyPressed(KEY_O)) {
+            options = true;
+        }
+        else if (IsKeyPressed(KEY_SPACE)) {
+            InitGame();
+            menu = false;
+        }
     }
 }
 
@@ -595,10 +606,13 @@ void DrawGame(void)
         DrawRectangleV(fruit.position, fruit.size, fruit.color);
 
         //Draw score
-        DrawText(TextFormat("Score Player 1 : %i", players.snakes[0]->counterTail), 10, (GetScreenHeight() - 20), 20, BLUE);
+        DrawText(TextFormat("Score Player 1 : %i", players.snakes[0]->counterTail), 10, (GetScreenHeight() - 80), 25, BLUE);
+        DrawText(TextFormat("Player 1 : %i lives", players.snakes[0]->lives), 10, (GetScreenHeight() - 45), 25, MAROON);
+        DrawText(TextFormat("HISCORE : %i", hiscore), GetScreenWidth() / 2 - MeasureText("HISCORE : %i", 30) / 2, (GetScreenHeight() - 80), 30, GRAY);
         if (players.nbrOfPlayer == 2)
         {
-            DrawText(TextFormat("Score Player 2 : %i", players.snakes[1]->counterTail), GetScreenWidth() - MeasureText("Score Player 2 : %i", 20) - 10, (GetScreenHeight() - 20), 20, BLUE);
+            DrawText(TextFormat("Score Player 2 : %i", players.snakes[1]->counterTail), GetScreenWidth() - MeasureText("Score Player 2 : %i", 25) - 10, (GetScreenHeight() - 80), 25, ORANGE);
+            DrawText(TextFormat("Player 1 : %i lives", players.snakes[1]->lives), GetScreenWidth() - MeasureText("Score Player 2 : %i", 25) - 10, (GetScreenHeight() - 45), 25, MAROON);
         }
         //Draw pause during game
         if (pause)
@@ -617,8 +631,9 @@ void DrawGame(void)
     {
         DrawText("MENU", GetScreenWidth() / 2 - MeasureText("MENU", 20) / 2, GetScreenHeight() / 2 - 50, 20, GRAY);
         DrawText("[O] - OPTIONS", GetScreenWidth() / 2 - MeasureText("[O] - OPTIONS", 20) / 2, GetScreenHeight() / 2, 20, RED);
-        DrawText(TextFormat("Last score : %i || Best score : %i", score, hiscore), GetScreenWidth() / 2 - MeasureText("Last score : 10 || Best score : 20", 20) / 2, GetScreenHeight() / 2 + 50, 20, ORANGE);
-        DrawText("[SPACE] TO START", GetScreenWidth() / 2 - MeasureText("[SPACE] TO START", 20) / 2, GetScreenHeight() / 2 + 100, 20, LIGHTGRAY);
+        DrawText(TextFormat("Last scores : Player-1 : %i || Player-2 : %i", score, score2), GetScreenWidth() / 2 - MeasureText("Last score : Player-1 10 || Player-2 : 20", 20) / 2, GetScreenHeight() / 2 + 50, 20, ORANGE);
+        DrawText(TextFormat("HISCORE : %i", hiscore), GetScreenWidth() / 2 - MeasureText("HISCORE : 20", 20) / 2, GetScreenHeight() / 2 + 100, 20, MAROON);
+        DrawText("[SPACE] TO START", GetScreenWidth() / 2 - MeasureText("[SPACE] TO START", 20) / 2, GetScreenHeight() / 2 + 150, 20, LIGHTGRAY);
         DrawText("PRESS [ESC] TO LEAVE", GetScreenWidth() / 2 - MeasureText("PRESS [ESC] TO LEAVE", 20) / 2, GetScreenHeight() - 50, 20, DARKGRAY);
     }
     else if (options)

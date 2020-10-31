@@ -1,8 +1,10 @@
 /*******************************************************************************************
 *
-*   raylib - sample game: snake
+*   raylib - sample game: snake (Solo only mode)
 *
-*   Sample game developed by Ian Eito, Albert Martos and Ramon Santamaria
+*   Sample game originally developed by Ian Eito, Albert Martos and Ramon Santamaria
+*
+*   Modified by : Pierre Bourdeau adding features such as : Multiplayer mode, Menus, Options, Lives, Wall generation, Cross wall, Speed Increase, GameModes...
 *
 *   This game has been created using raylib v1.3 (www.raylib.com)
 *   raylib is licensed under an unmodified zlib/libpng license (View raylib.h for details)
