@@ -47,19 +47,19 @@ ___
 Le jeu s'ouvre sur la page de menu ou est affiché :
 * Le dernier score des joueurs
 * Le record de points
-* Barre [ESPACE] pour lancer la partie avec les options séléctionnées
-* [ESCAPE] pour fermer l'application
-* [O] pour ouvrir le menu d'option
+* Barre __[ESPACE]__ pour lancer la partie avec les options séléctionnées
+* __[ESCAPE]__ pour fermer l'application
+* __[O]__ pour ouvrir le menu d'option
 
 #### Options :
 
 Le menu d'option permets de choisir les parametres de jeu :
-Pour naviguer dans le menu, utilisez : [▲] et [▼]
-[ENTREE] pour enregistrer les paramètres actuels et revenir au menu
-* Séléctionner la difficulté : [1] - [2] - [3]  (ou "&", "é", """)
-* Une ou trois vie : [Y] : 3 vies / [N] : 1 vie
-* Traverser les bords de carte : [Y] : Oui / [N] : Non
-* Seul ou multijoueurs : [Y] : Multijoueurs / [N] : Seul
+Pour naviguer dans le menu, utilisez : __[▲]__ et __[▼]__
+__[ENTREE]__ pour enregistrer les paramètres actuels et revenir au menu principal
+* Séléctionner la difficulté : __[1]__ - __[2]__ - __[3]__  (ou "&", "é", """)
+* Une ou trois vie : __[Y]__ : 3 vies / __[N]__ : 1 vie
+* Traverser les bords de carte : __[Y]__ : Oui / __[N]__ : Non
+* Seul ou multijoueurs : __[Y]__ : Multijoueurs / __[N]__ : Seul
 
 #### Jeu :
 
@@ -81,17 +81,34 @@ Si deux joueurs se rencontre avec la tête du serpent, les deux joueurs perdent.
 
 #### Controles :
 Le joueur 1 incarne le serpent bleu :
-* [▲] : Haut
-* [▼] : Bas
-* [◀] : Gauche
-* [▶] : Droite
+* __[▲]__ : Haut
+* __[▼]__ : Bas
+* __[◄]__ : Gauche
+* __[►]__ : Droite
 
 Le joueur 2 incarne le serpent Orange :
-* [R] : Haut
-* [F] : Bas
-* [D] : Gauche
-* [G] : Droite
+* __[R]__ : Haut
+* __[F]__ : Bas
+* __[D]__ : Gauche
+* __[G]__ : Droite
 
-Une partie peut être mise en pause en appuyant sur [P]
+Une partie peut être mise en pause en appuyant sur __[P]__
 
-Le menu de pause permet également de revenir au menu principal : [E]
+Le menu de pause permet également de revenir au menu principal : __[E]__
+
+### Fichier et code :
+
+Le code source est contenu dans les fichiers : 
+* `main_snake_solo.c`: Il a été la V1 qui a permit la mise en place des fonctionnalités. Jouable seul uniquement.
+* `main_snake_multi.c` : Il est le projet final. Jouable seul comme à deux.
+Le projet fonctionne avec la 'library RayLib'. Le code original, socle de ce projet se trouve : [ici](https://www.raylib.com/games.html)
+
+### Dynamique du projet :
+
+Tous les aspects et fonctionnalitées ennoncés ci-dessus sont complets et fonctionnels. J'avais pour idée d'implémenter d'autre fonctionnalités telles que :
+* Des fruit offrant aléatoirement des bonus ou malus (Vitesse (+ ou -), capacité de traverser les murs, vie supplémentaaire...
+* Un mode multijoueur en ligne
+* Un tableau de score (ladder) avec les noms des joueurs et les scores
+* ...
+Ces fonctionnalités seront peut-être ajoutée par la suite.
+¯\_(ツ)_/¯
