@@ -80,6 +80,8 @@ Un joueur meurt ou pert une vie si :
 
 Si deux joueurs se rencontre avec la tête du serpent, les deux joueurs perdent.
 
+Lorsque l'un des joueurs ou les deux joueurs n'ont plus de vie, un menu Game Over apparaît. Il permet de revenir au menu principal via : __[E]__ ou de rejouer la partie avec les paramètres actuels via : __[ENTREE]__
+
 #### Controles :
 Le joueur 1 incarne le serpent bleu :
 * __[▲]__ : Haut
