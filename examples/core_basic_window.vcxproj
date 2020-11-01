@@ -327,7 +327,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="core_basic_window.c">
+    <ClCompile Include="main_snake_solo.c">
       <SubType>
       </SubType>
     </ClCompile>
