@@ -1,7 +1,6 @@
-# TP7
-RayLib Multiplayer snake
+# MLOD PROJECT
 
-![alt text](https://github.com/PierreBourdeau/TP7/blob/master/raylib_180x180.png)
+![alt text](https://github.com/PierreBourdeau/TP7/blob/master/raylib_180x180.png)RayLib Multiplayer snake - Pierre Bourdeau
 
   Original Sample game developed by Ian Eito, Albert Martos and Ramon Santamaria
 
@@ -14,11 +13,11 @@ RayLib Multiplayer snake
 
 ___
 
-##RayLib Multiplayer snake
+## RayLib Multiplayer snake
 ======
 project extented by : Pierre Bourdeau 
 
-###Présentation globale :
+### Présentation globale :
 
 Le projet est issue du jeu snake disponible sur le site officiel de [RayLib](https://www.raylib.com/games.html).
 De nombreuses extensions ont été ajoutées :
@@ -34,7 +33,7 @@ De nombreuses extensions ont été ajoutées :
 Les 3 niveaux de difficulté sont établis tels que :
 * Le niveau 1 correspond au Snake classique, pas d'obstacle sur le terrain (1 ou 2 joueurs).
 * Le niveau 2 permet d'introduire la génération aléatoire d'obstacles sur le terrain (1 ou 2 joueurs).
-* Le niveau 3 permet d'introduire la génération aléatoire d'obstacles sur le terrain et le changement de disposition de ceux-ci et une accélération (+10 fps) tous les 10 fruits mangés par un des joueurs. La vitesse est limitée à 100 fps
+* Le niveau 3 permet d'introduire la génération aléatoire d'obstacles sur le terrain et le changement de disposition de ceux-ci et une accélération `(+10 fps)` tous les 10 fruits mangés par un des joueurs. La vitesse est limitée à 100 fps
 
 Dans tous les modes de jeu, il est possible via le menu d'option de pramétrer :
 * 1 ou 3 vies
@@ -42,8 +41,9 @@ Dans tous les modes de jeu, il est possible via le menu d'option de pramétrer :
 * Jouer seul ou à deux
 ___
 
-###Fonctionnement du jeu : 
-####Menu :
+### Fonctionnement du jeu : 
+#### Menu :
+
 Le jeu s'ouvre sur la page de menu ou est affiché :
 * Le dernier score des joueurs
 * Le record de points
@@ -51,7 +51,8 @@ Le jeu s'ouvre sur la page de menu ou est affiché :
 * [ESCAPE] pour fermer l'application
 * [O] pour ouvrir le menu d'option
 
-####Options :
+#### Options :
+
 Le menu d'option permets de choisir les parametres de jeu :
 Pour naviguer dans le menu, utilisez : [▲] et [▼]
 [ENTREE] pour enregistrer les paramètres actuels et revenir au menu
@@ -60,7 +61,8 @@ Pour naviguer dans le menu, utilisez : [▲] et [▼]
 * Traverser les bords de carte : [Y] : Oui / [N] : Non
 * Seul ou multijoueurs : [Y] : Multijoueurs / [N] : Seul
 
-####Jeu :
+#### Jeu :
+
 Durant la partie sont affichés les informations suivantes :
 * Points actuel de chaque joueur
 * Vies de chaque joueur
@@ -77,12 +79,12 @@ Un joueur meurt ou pert une vie si :
 
 Si deux joueurs se rencontre avec la tête du serpent, les deux joueurs perdent.
 
-####Controles :
+#### Controles :
 Le joueur 1 incarne le serpent bleu :
 * [▲] : Haut
 * [▼] : Bas
-* [◄] : Gauche
-* [►] : Droite
+* [◀] : Gauche
+* [▶] : Droite
 
 Le joueur 2 incarne le serpent Orange :
 * [R] : Haut
@@ -91,4 +93,5 @@ Le joueur 2 incarne le serpent Orange :
 * [G] : Droite
 
 Une partie peut être mise en pause en appuyant sur [P]
+
 Le menu de pause permet également de revenir au menu principal : [E]
