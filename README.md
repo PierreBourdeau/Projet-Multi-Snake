@@ -1,6 +1,6 @@
 # MLOD PROJECT
 
-![alt text](https://github.com/PierreBourdeau/TP7/blob/master/raylib_180x180.png)RayLib Multiplayer snake - Pierre Bourdeau
+![alt text](https://github.com/PierreBourdeau/TP7/blob/master/raylib_180x180.png)  __RayLib Multiplayer snake - Pierre Bourdeau__
 
   Original Sample game developed by Ian Eito, Albert Martos and Ramon Santamaria
 
@@ -55,6 +55,7 @@ Le jeu s'ouvre sur la page de menu ou est affiché :
 
 Le menu d'option permets de choisir les parametres de jeu :
 Pour naviguer dans le menu, utilisez : __[▲]__ et __[▼]__
+
 __[ENTREE]__ pour enregistrer les paramètres actuels et revenir au menu principal
 * Séléctionner la difficulté : __[1]__ - __[2]__ - __[3]__  (ou "&", "é", """)
 * Une ou trois vie : __[Y]__ : 3 vies / __[N]__ : 1 vie
@@ -101,6 +102,7 @@ Le menu de pause permet également de revenir au menu principal : __[E]__
 Le code source est contenu dans les fichiers : 
 * `main_snake_solo.c`: Il a été la V1 qui a permit la mise en place des fonctionnalités. Jouable seul uniquement.
 * `main_snake_multi.c` : Il est le projet final. Jouable seul comme à deux.
+
 Le projet fonctionne avec la 'library RayLib'. Le code original, socle de ce projet se trouve : [ici](https://www.raylib.com/games.html)
 
 ### Dynamique du projet :
@@ -111,4 +113,5 @@ Tous les aspects et fonctionnalitées ennoncés ci-dessus sont complets et fonct
 * Un tableau de score (ladder) avec les noms des joueurs et les scores
 * ...
 Ces fonctionnalités seront peut-être ajoutée par la suite.
+
 ¯\_(ツ)_/¯
