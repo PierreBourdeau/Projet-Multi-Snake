@@ -105,6 +105,14 @@ Le code source est contenu dans les fichiers :
 * `main_snake_solo.c`: Il a été la V1 qui a permit la mise en place des fonctionnalités. Jouable seul uniquement.
 * `main_snake_multi.c` : Il est le projet final. Jouable seul comme à deux.
 
+Ces fichiers sont consultables sur le git sous : `TP7/examples/`.
+
+Un dossier compressé zip : `BOURDEAU_Pierre_Snake.zip` contient tout le nécessaire pour run le projet avec respectivement deux éxécutables :
+* `main_snake_multi.exe` qui correspond à la version finale du projet, avec le mode multijoueurs
+* `main_snake_solo.exe` qui correspond à la V1, jouable seul uniquement
+
+Les éxécutables ont étés générés via NotePad++ adapté à Raylib
+
 Le projet fonctionne avec la 'library RayLib'. Le code original, socle de ce projet se trouve : [ici](https://www.raylib.com/games.html)
 
 ### Dynamique du projet :
