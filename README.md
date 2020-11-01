@@ -114,6 +114,7 @@ Tous les aspects et fonctionnalitées ennoncés ci-dessus sont complets et fonct
 * Un mode multijoueur en ligne
 * Un tableau de score (ladder) avec les noms des joueurs et les scores
 * ...
+
 Ces fonctionnalités seront peut-être ajoutée par la suite.
 
 ¯\_(ツ)_/¯
