@@ -117,6 +117,8 @@ Le projet fonctionne avec la 'library RayLib'. Le code original, socle de ce pro
 
 Les scores des joueurs et le hiscore sont enregistés dans un fichier `storage.data`, généré dans le même dossier que le projet. Pour réinitialiser toutes les données de score, supprimez ce fichier. Il sera re-généré lors de la prochaine partie.
 
+*__Remarque : La fenêtre de jeu est définie par défaut sur les dimensions : 1280x820 pour la version finale multijoueurs et 1280x720 pour la version solo (format 16:9). Si les dimensions excèdent les dimensions du moniteur, celles-ci sont modifiables via le code source, celles-ci sont définies dans le code via les variable globales : `screenWidth` et `screenHeight`. Il est conseillé de conserver un format 16:9.__*
+
 ### Dynamique du projet :
 
 Tous les aspects et fonctionnalitées ennoncés ci-dessus sont complets et fonctionnels. J'avais pour idée d'implémenter d'autre fonctionnalités telles que :
