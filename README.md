@@ -1,4 +1,4 @@
-# MLOD PROJECT
+# PROJECT MULTI-SNAKE
 
 ![alt text](https://github.com/PierreBourdeau/TP7/blob/master/raylib_180x180.png)  __RayLib Multiplayer snake - Pierre Bourdeau__
 
