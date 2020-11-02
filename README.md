@@ -109,6 +109,8 @@ Ces fichiers sont consultables sur le git sous : `TP7/examples/`. Ceux-ci sont l
 
 Le projet fonctionne avec la 'library RayLib'. Le code original, socle de ce projet se trouve : [ici](https://www.raylib.com/games.html)
 
+Les scores des joueurs et le hiscore sont enregistés dans un fichier `storage.data`, généré dans le même dossier que le projet. Pour réinitialiser toutes les données de score, supprimez ce fichier. Il sera re-généré lors de la prochaine partie.
+
 #### Compilation et run
 
 Un dossier compressé zip : `BOURDEAU_Pierre_Snake.zip` contient tout le nécessaire pour run le projet avec respectivement deux éxécutables :
@@ -116,8 +118,6 @@ Un dossier compressé zip : `BOURDEAU_Pierre_Snake.zip` contient tout le nécess
 * `main_snake_solo.exe` qui correspond à la V1, jouable seul uniquement
 
 Les éxécutables ont étés générés après compilation via NotePad++ (version de Raylib) sur Windows.
-
-Les scores des joueurs et le hiscore sont enregistés dans un fichier `storage.data`, généré dans le même dossier que le projet. Pour réinitialiser toutes les données de score, supprimez ce fichier. Il sera re-généré lors de la prochaine partie.
 
 *__Remarque : La fenêtre de jeu est définie par défaut sur les dimensions : 1280x820 pour la version finale multijoueurs et 1280x720 pour la version solo (format 16:9). Si les dimensions excèdent les dimensions du moniteur, celles-ci sont modifiables via le code source, celles-ci sont définies dans le code via les variable globales : `screenWidth` et `screenHeight`. Il est conseillé de conserver un format 16:9.__*
 
