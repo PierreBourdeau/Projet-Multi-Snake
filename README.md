@@ -107,13 +107,15 @@ Le code source est contenu dans les fichiers :
 
 Ces fichiers sont consultables sur le git sous : `TP7/examples/`. Ceux-ci sont les fichiers ayant étés mis à jour tout au long du projet.
 
+Le projet fonctionne avec la 'library RayLib'. Le code original, socle de ce projet se trouve : [ici](https://www.raylib.com/games.html)
+
+#### Compilation et run
+
 Un dossier compressé zip : `BOURDEAU_Pierre_Snake.zip` contient tout le nécessaire pour run le projet avec respectivement deux éxécutables :
 * `main_snake_multi.exe` qui correspond à la version finale du projet, avec le mode multijoueurs
 * `main_snake_solo.exe` qui correspond à la V1, jouable seul uniquement
 
-Les éxécutables ont étés générés via NotePad++ adapté à Raylib
-
-Le projet fonctionne avec la 'library RayLib'. Le code original, socle de ce projet se trouve : [ici](https://www.raylib.com/games.html)
+Les éxécutables ont étés générés après compilation via NotePad++ (version de Raylib) sur Windows.
 
 Les scores des joueurs et le hiscore sont enregistés dans un fichier `storage.data`, généré dans le même dossier que le projet. Pour réinitialiser toutes les données de score, supprimez ce fichier. Il sera re-généré lors de la prochaine partie.
 
